@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Awaaz | Result</title>
+	<link rel="stylesheet" href="/static/css/dark.css" />
+	<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#0b0b0d] text-[#e6e6e6]">
+	<div class="container max-w-5xl mx-auto px-4">
+		<header class="flex items-center justify-between py-6">
+			<h1 class="text-2xl font-semibold">🕳️ Result</h1>
+			<div class="space-x-3 text-sm">
+				<a class="text-blue-400 hover:text-blue-300" href="/">Feed</a>
+				<span class="text-zinc-400">|</span>
+				<a class="text-blue-400 hover:text-blue-300" href="/new/">New</a>
+			</div>
+		</header>
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+			<div class="card p-4">
+				<img class="rounded-md" src="{{ obj.image.url }}" alt="uploaded" />
+			</div>
+			<div class="card p-4 space-y-3">
+				<p class="text-sm">
+					<span class="badge {{ obj.predicted_severity }}">Predicted: {{ obj.predicted_severity|capfirst }}</span>
+					<span class="text-zinc-400">Confidence: {{ obj.confidence|floatformat:2 }}</span>
+				</p>
+				{% if obj.true_severity %}
+					<p class="text-xs text-zinc-400">Corrected: <span class="badge {{ obj.true_severity }}">{{ obj.true_severity|capfirst }}</span></p>
+				{% endif %}
+				<pre class="whitespace-pre-wrap text-sm leading-relaxed">{{ obj.generated_text }}</pre>
+				<div class="flex items-center gap-3">
+					<span class="text-zinc-400 text-sm">Upvotes: {{ obj.upvote_count }}</span>
+					{% if request.user.is_authenticated %}
+						<form method="post" action="/complaint/{{ obj.pk }}/upvote/">
+							{% csrf_token %}
+							<button type="submit" class="rounded-md bg-blue-600 hover:bg-blue-500 px-3 py-1">{% if request.user in obj.upvotes.all %}Remove Upvote{% else %}Upvote{% endif %}</button>
+						</form>
+						{% if obj.user == request.user or request.user.is_staff %}
+							<a href="{% url 'complaint_edit' obj.pk %}" class="rounded-md bg-green-600 hover:bg-green-500 px-3 py-1">Edit</a>
+						{% endif %}
+					{% else %}
+						<small><a class="text-blue-400 hover:text-blue-300" href="/login/">Login to upvote</a></small>
+					{% endif %}
+				</div>
+				{% if obj.mongo_file_id %}
+					<p class="text-zinc-500 text-xs">Stored in Mongo GridFS (id: {{ obj.mongo_file_id }})</p>
+				{% endif %}
+			</div>
+		</div>
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+			<div class="card p-4">
+				<h3 class="font-semibold mb-3">Comments</h3>
+				<div class="space-y-3">
+					{% for c in obj.comments.all %}
+						<div>
+							<p class="text-sm"><strong>{{ c.user.username }}</strong> · <span class="text-zinc-500">{{ c.created_at }}</span></p>
+							<p class="text-sm text-zinc-200">{{ c.text }}</p>
+							<hr class="border-[#20202a] mt-3" />
+						</div>
+					{% empty %}
+						<p class="text-sm text-zinc-400">No comments yet.</p>
+					{% endfor %}
+				</div>
+				{% if request.user.is_authenticated %}
+					<form method="post" action="/complaint/{{ obj.pk }}/comment/" class="mt-3">
+						{% csrf_token %}
+						{{ comment_form.text }}
+						<button type="submit" class="mt-2 rounded-md bg-blue-600 hover:bg-blue-500 px-3 py-1">Comment</button>
+					</form>
+				{% else %}
+					<small><a class="text-blue-400 hover:text-blue-300" href="/login/">Login to comment</a></small>
+				{% endif %}
+			</div>
+			<div class="card p-4">
+				<h3 class="font-semibold mb-3">Is severity wrong?</h3>
+				{% if request.user.is_authenticated %}
+					<form method="post" action="/complaint/{{ obj.pk }}/correct/" class="flex items-center gap-3">
+						{% csrf_token %}
+						{{ corr_form.true_severity }}
+						<button type="submit" class="rounded-md bg-blue-600 hover:bg-blue-500 px-3 py-1">Submit correction</button>
+					</form>
+				{% else %}
+					<small><a class="text-blue-400 hover:text-blue-300" href="/login/">Login to suggest a correction</a></small>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+</body>
+</html>

@@ -1,0 +1,25 @@
+/* Full black theme */
+:root{
+	--bg: #000000;
+	--card: #0b0b0d;
+	--border: #1f1f26;
+	--text: #f5f5f7;
+	--muted: #9aa0a6;
+	--accent: #2f6df6;
+	--accent-600: #2558c9;
+	--shadow: 0 6px 24px rgba(0,0,0,.6);
+}
+
+body{background:var(--bg);color:var(--text)}
+.container{max-width:1100px;margin:40px auto;padding:0 16px}
+.card{padding:16px;border:1px solid var(--border);border-radius:14px;background:var(--card);box-shadow:var(--shadow)}
+.badge{display:inline-block;padding:6px 10px;border-radius:999px;font-weight:600;font-size:12px}
+.badge.minor{background:#1e3a2f;color:#90e0a4;border:1px solid #245a46}
+.badge.moderate{background:#3a2f1e;color:#f6d17a;border:1px solid #5a4526}
+.badge.severe{background:#3a1e1e;color:#f69b9b;border:1px solid #5a2626}
+pre{background:#0f0f14;border:1px solid var(--border);border-radius:12px;padding:12px;overflow:auto;color:var(--text)}
+img{max-width:100%;border-radius:12px;border:1px solid var(--border)}
+.footer{margin-top:24px;color:var(--muted);text-align:center}
+
+.btn{display:inline-flex;align-items:center;border-radius:10px;background:var(--accent);color:#fff;padding:10px 14px}
+.btn:hover{background:var(--accent-600)}

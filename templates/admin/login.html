@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Awaaz | Admin Login</title>
+	<link rel="stylesheet" href="/static/css/dark.css" />
+	<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#000000] text-[#f5f5f7]">
+	<div class="container max-w-md mx-auto px-4 py-20">
+		<div class="text-center mb-8">
+			<h1 class="text-3xl font-bold text-red-500">🔒 Admin Panel</h1>
+			<p class="text-zinc-400 mt-2">Awaaz - Pothole Report System</p>
+		</div>
+
+		{% if messages %}
+			{% for message in messages %}
+				<div class="mb-4 p-4 rounded-md {% if message.tags == 'error' %}bg-red-900 text-red-200{% else %}bg-green-900 text-green-200{% endif %}">
+					{{ message }}
+				</div>
+			{% endfor %}
+		{% endif %}
+
+		<div class="card p-8">
+			<form method="post" class="space-y-6">
+				{% csrf_token %}
+				<div>
+					<label class="block text-sm font-medium text-zinc-300 mb-2">Admin Username</label>
+					<input type="text" name="username" required class="w-full rounded-md bg-[#0f0f14] border border-[#2a2a36] p-3 focus:border-red-500 focus:outline-none" placeholder="Enter admin username">
+				</div>
+				
+				<div>
+					<label class="block text-sm font-medium text-zinc-300 mb-2">Password</label>
+					<input type="password" name="password" required class="w-full rounded-md bg-[#0f0f14] border border-[#2a2a36] p-3 focus:border-red-500 focus:outline-none" placeholder="Enter admin password">
+				</div>
+				
+				<button type="submit" class="w-full inline-flex items-center justify-center rounded-md bg-red-600 hover:bg-red-500 px-4 py-3 font-medium">
+					🔐 Login as Admin
+				</button>
+			</form>
+		</div>
+
+		<div class="text-center mt-6">
+			<a href="/" class="text-blue-400 hover:text-blue-300 text-sm">← Back to Public Feed</a>
+		</div>
+	</div>
+</body>
+</html>
+
+

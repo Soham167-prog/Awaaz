@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Awaaz - Pothole Report System</title>
+	<link rel="stylesheet" href="/static/css/dark.css" />
+	<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#000000] text-[#f5f5f7]">
+	<div class="min-h-screen flex flex-col">
+		<!-- Header -->
+		<header class="bg-[#0b0b0d] border-b border-[#2a2a36] py-4">
+			<div class="container max-w-6xl mx-auto px-4">
+				<div class="flex items-center justify-between">
+					<h1 class="text-2xl font-bold text-blue-400">🕳️ Awaaz</h1>
+					<div class="space-x-4">
+						<a href="/login/" class="text-blue-400 hover:text-blue-300 px-4 py-2 rounded-md border border-blue-400 hover:bg-blue-400 hover:text-black transition-all">Login</a>
+						<a href="/signup/" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md transition-all">Sign Up</a>
+					</div>
+				</div>
+			</div>
+		</header>
+
+		<!-- Hero Section -->
+		<section class="flex-1 py-20">
+			<div class="container max-w-6xl mx-auto px-4">
+				<div class="text-center mb-16">
+					<h2 class="text-5xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+						Report Potholes, Save Lives
+					</h2>
+					<p class="text-xl text-zinc-300 mb-8 max-w-3xl mx-auto">
+						Join thousands of citizens using AI-powered technology to identify and report road hazards. 
+						Help make our roads safer for everyone with just a simple photo.
+					</p>
+					<div class="flex flex-col sm:flex-row gap-4 justify-center">
+						<a href="/login/" class="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all transform hover:scale-105">
+							Get Started
+						</a>
+						<a href="/" class="border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black px-8 py-4 rounded-lg text-lg font-semibold transition-all">
+							View Reports
+						</a>
+					</div>
+				</div>
+
+				<!-- Features Grid -->
+				<div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+					<div class="card p-6 text-center">
+						<div class="text-4xl mb-4">🤖</div>
+						<h3 class="text-xl font-semibold mb-3">AI-Powered Detection</h3>
+						<p class="text-zinc-300">Our advanced AI automatically analyzes your photos to identify pothole severity and generate detailed reports.</p>
+					</div>
+					<div class="card p-6 text-center">
+						<div class="text-4xl mb-4">📍</div>
+						<h3 class="text-xl font-semibold mb-3">Location-Based Tracking</h3>
+						<p class="text-zinc-300">Filter and track potholes by location to see what's happening in your neighborhood.</p>
+					</div>
+					<div class="card p-6 text-center">
+						<div class="text-4xl mb-4">👥</div>
+						<h3 class="text-xl font-semibold mb-3">Community Driven</h3>
+						<p class="text-zinc-300">Join a community of concerned citizens working together to improve road safety.</p>
+					</div>
+				</div>
+
+				<!-- How It Works -->
+				<div class="card p-8 mb-16">
+					<h3 class="text-2xl font-semibold text-center mb-8">How It Works</h3>
+					<div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+						<div class="text-center">
+							<div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">1</div>
+							<h4 class="font-semibold mb-2">Take a Photo</h4>
+							<p class="text-sm text-zinc-300">Capture a clear photo of the pothole or road damage</p>
+						</div>
+						<div class="text-center">
+							<div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">2</div>
+							<h4 class="font-semibold mb-2">AI Analysis</h4>
+							<p class="text-sm text-zinc-300">Our AI analyzes the image and determines severity</p>
+						</div>
+						<div class="text-center">
+							<div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">3</div>
+							<h4 class="font-semibold mb-2">Review & Edit</h4>
+							<p class="text-sm text-zinc-300">Review the generated report and add your details</p>
+						</div>
+						<div class="text-center">
+							<div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">4</div>
+							<h4 class="font-semibold mb-2">Submit Report</h4>
+							<p class="text-sm text-zinc-300">Share your report with the community and authorities</p>
+						</div>
+					</div>
+				</div>
+
+				<!-- Stats Section -->
+				<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-16">
+					<div class="card p-6 text-center">
+						<div class="text-3xl font-bold text-blue-400 mb-2">{{ total_reports|default:"0" }}+</div>
+						<div class="text-zinc-300">Reports Submitted</div>
+					</div>
+					<div class="card p-6 text-center">
+						<div class="text-3xl font-bold text-green-400 mb-2">{{ active_users|default:"0" }}+</div>
+						<div class="text-zinc-300">Active Users</div>
+					</div>
+					<div class="card p-6 text-center">
+						<div class="text-3xl font-bold text-yellow-400 mb-2">{{ locations_covered|default:"0" }}+</div>
+						<div class="text-zinc-300">Locations Covered</div>
+					</div>
+					<div class="card p-6 text-center">
+						<div class="text-3xl font-bold text-red-400 mb-2">{{ severe_issues|default:"0" }}+</div>
+						<div class="text-zinc-300">Severe Issues</div>
+					</div>
+				</div>
+
+				<!-- Recent Reports Preview -->
+				<div class="card p-8">
+					<h3 class="text-2xl font-semibold mb-6">Recent Reports</h3>
+					<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+						{% for complaint in recent_reports %}
+						<div class="border border-[#2a2a36] rounded-lg p-4">
+							<img src="{{ complaint.image.url }}" class="w-full h-32 object-cover rounded mb-3" alt="Pothole report">
+							<div class="flex items-center justify-between mb-2">
+								<span class="badge {% if complaint.true_severity %}{{ complaint.true_severity }}{% else %}{{ complaint.predicted_severity }}{% endif %}">
+									{% if complaint.true_severity %}{{ complaint.true_severity|capfirst }}{% else %}{{ complaint.predicted_severity|capfirst }}{% endif %}
+								</span>
+								<span class="text-sm text-zinc-400">{{ complaint.created_at|timesince }} ago</span>
+							</div>
+							<p class="text-sm text-zinc-300">{{ complaint.location|default:"Location not specified" }}</p>
+						</div>
+						{% empty %}
+						<div class="col-span-full text-center text-zinc-400 py-8">
+							No reports yet. Be the first to report a pothole!
+						</div>
+						{% endfor %}
+					</div>
+					<div class="text-center mt-6">
+						<a href="/" class="text-blue-400 hover:text-blue-300 font-semibold">View All Reports →</a>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Footer -->
+		<footer class="bg-[#0b0b0d] border-t border-[#2a2a36] py-8">
+			<div class="container max-w-6xl mx-auto px-4">
+				<div class="text-center text-zinc-400">
+					<p>&copy; 2025 Awaaz - Pothole Report System. Making roads safer, one report at a time.</p>
+				</div>
+			</div>
+		</footer>
+	</div>
+</body>
+</html>
+
+

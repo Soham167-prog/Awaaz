@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Awaaz | Admin Dashboard</title>
+	<link rel="stylesheet" href="/static/css/dark.css" />
+	<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#000000] text-[#f5f5f7]">
+	<div class="container max-w-7xl mx-auto px-4">
+		<header class="flex items-center justify-between py-6">
+			<h1 class="text-2xl font-semibold text-red-500">🔒 Admin Dashboard</h1>
+			<div class="space-x-3 text-sm">
+				<a class="text-blue-400 hover:text-blue-300" href="/">Public Feed</a>
+				<span class="text-zinc-400">|</span>
+				<span class="text-zinc-400">Admin: {{ request.user.username }}</span>
+				<span class="text-zinc-400">|</span>
+				<a class="text-red-400 hover:text-red-300" href="/admin/logout/">Logout</a>
+			</div>
+		</header>
+
+		{% if messages %}
+			{% for message in messages %}
+				<div class="mb-4 p-4 rounded-md {% if message.tags == 'error' %}bg-red-900 text-red-200{% else %}bg-green-900 text-green-200{% endif %}">
+					{{ message }}
+				</div>
+			{% endfor %}
+		{% endif %}
+
+		<!-- Stats Cards -->
+		<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+			<div class="card p-4">
+				<h3 class="text-sm font-medium text-zinc-400">Total Complaints</h3>
+				<p class="text-2xl font-bold">{{ total_complaints }}</p>
+			</div>
+			<div class="card p-4">
+				<h3 class="text-sm font-medium text-zinc-400">Public Posts</h3>
+				<p class="text-2xl font-bold">{{ public_complaints }}</p>
+			</div>
+			<div class="card p-4">
+				<h3 class="text-sm font-medium text-zinc-400">Severe Issues</h3>
+				<p class="text-2xl font-bold text-red-400">{{ severe_complaints }}</p>
+			</div>
+			<div class="card p-4">
+				<h3 class="text-sm font-medium text-zinc-400">Total Users</h3>
+				<p class="text-2xl font-bold">{{ total_users }}</p>
+			</div>
+		</div>
+
+		<!-- Filter and Search -->
+		<div class="card p-4 mb-6">
+			<form method="get" class="grid grid-cols-1 md:grid-cols-6 gap-4">
+				<div>
+					<label class="block mb-2 text-zinc-300">Severity</label>
+					<select name="severity" class="w-full rounded-md bg-[#0f0f14] border border-[#2a2a36] p-2">
+						<option value="">All</option>
+						<option value="minor">Minor</option>
+						<option value="moderate">Moderate</option>
+						<option value="severe">Severe</option>
+					</select>
+				</div>
+				<div>
+					<label class="block mb-2 text-zinc-300">Location</label>
+					<input type="text" name="location" placeholder="Filter by location" class="w-full rounded-md bg-[#0f0f14] border border-[#2a2a36] p-2" value="{{ request.GET.location }}">
+				</div>
+				<div>
+					<label class="block mb-2 text-zinc-300">Status</label>
+					<select name="public" class="w-full rounded-md bg-[#0f0f14] border border-[#2a2a36] p-2">
+						<option value="">All</option>
+						<option value="true">Public</option>
+						<option value="false">Private</option>
+					</select>
+				</div>
+				<div class="md:col-span-2">
+					<label class="block mb-2 text-zinc-300">Search</label>
+					<input type="text" name="q" placeholder="Title, description, user, or location" class="w-full rounded-md bg-[#0f0f14] border border-[#2a2a36] p-2" value="{{ request.GET.q }}">
+				</div>
+				<div class="flex items-end">
+					<button type="submit" class="w-full inline-flex items-center justify-center rounded-md bg-blue-600 hover:bg-blue-500 px-4 py-2">Filter</button>
+				</div>
+			</form>
+		</div>
+
+		<!-- Complaints Table -->
+		<div class="card p-4">
+			<h2 class="text-xl font-semibold mb-4">All Complaints</h2>
+			<div class="overflow-x-auto">
+				<table class="w-full">
+					<thead>
+						<tr class="border-b border-[#2a2a36]">
+							<th class="text-left py-3 px-2">ID</th>
+							<th class="text-left py-3 px-2">Image</th>
+							<th class="text-left py-3 px-2">Title</th>
+							<th class="text-left py-3 px-2">Location</th>
+							<th class="text-left py-3 px-2">Severity</th>
+							<th class="text-left py-3 px-2">User</th>
+							<th class="text-left py-3 px-2">Public</th>
+							<th class="text-left py-3 px-2">Created</th>
+							<th class="text-left py-3 px-2">Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for complaint in complaints %}
+						<tr class="border-b border-[#1f1f26] hover:bg-[#0f0f14]">
+							<td class="py-3 px-2 text-sm">{{ complaint.id }}</td>
+							<td class="py-3 px-2">
+								<img src="{{ complaint.image.url }}" class="w-16 h-16 object-cover rounded" alt="Complaint image">
+							</td>
+							<td class="py-3 px-2">
+								<div class="max-w-xs">
+									<p class="font-medium truncate">{{ complaint.title|default:"Pothole Report" }}</p>
+									<p class="text-sm text-zinc-400 truncate">{{ complaint.description|truncatechars:50 }}</p>
+								</div>
+							</td>
+							<td class="py-3 px-2">
+								<span class="text-sm text-blue-300">{{ complaint.location|default:"Not specified" }}</span>
+							</td>
+							<td class="py-3 px-2">
+								<span class="badge {% if complaint.true_severity %}{{ complaint.true_severity }}{% else %}{{ complaint.predicted_severity }}{% endif %}">
+									{% if complaint.true_severity %}{{ complaint.true_severity|capfirst }}{% else %}{{ complaint.predicted_severity|capfirst }}{% endif %}
+								</span>
+							</td>
+							<td class="py-3 px-2 text-sm">{{ complaint.user.username|default:"Anonymous" }}</td>
+							<td class="py-3 px-2">
+								{% if complaint.public %}
+									<span class="text-green-400">✓ Public</span>
+								{% else %}
+									<span class="text-red-400">✗ Private</span>
+								{% endif %}
+							</td>
+							<td class="py-3 px-2 text-sm">{{ complaint.created_at|date:"M d, Y" }}</td>
+							<td class="py-3 px-2">
+								<div class="flex space-x-2">
+									<a href="/complaint/{{ complaint.id }}/" class="text-blue-400 hover:text-blue-300 text-sm">View</a>
+									<button onclick="deleteComplaint({{ complaint.id }})" class="text-red-400 hover:text-red-300 text-sm">Delete</button>
+								</div>
+							</td>
+						</tr>
+						{% empty %}
+						<tr>
+							<td colspan="9" class="py-8 text-center text-zinc-400">No complaints found.</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+
+			<!-- Pagination -->
+			{% if complaints.has_other_pages %}
+			<div class="mt-6 flex items-center justify-between">
+				<div>
+					{% if complaints.has_previous %}
+						<a class="text-blue-400 hover:text-blue-300" href="?page={{ complaints.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.severity %}&severity={{ request.GET.severity }}{% endif %}{% if request.GET.public %}&public={{ request.GET.public }}{% endif %}">Previous</a>
+					{% endif %}
+				</div>
+				<div>Page {{ complaints.number }} of {{ complaints.paginator.num_pages }}</div>
+				<div>
+					{% if complaints.has_next %}
+						<a class="text-blue-400 hover:text-blue-300" href="?page={{ complaints.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.severity %}&severity={{ request.GET.severity }}{% endif %}{% if request.GET.public %}&public={{ request.GET.public }}{% endif %}">Next</a>
+					{% endif %}
+				</div>
+			</div>
+			{% endif %}
+		</div>
+	</div>
+
+	<!-- Delete Confirmation Modal -->
+	<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+		<div class="bg-[#0b0b0d] border border-[#2a2a36] rounded-lg p-6 max-w-md w-full mx-4">
+			<h3 class="text-lg font-semibold text-red-400 mb-4">Confirm Deletion</h3>
+			<p class="text-zinc-300 mb-6">Are you sure you want to delete this complaint? This action cannot be undone.</p>
+			<div class="flex space-x-3">
+				<button id="confirmDelete" class="flex-1 bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded">Delete</button>
+				<button id="cancelDelete" class="flex-1 bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		let complaintToDelete = null;
+
+		function deleteComplaint(complaintId) {
+			complaintToDelete = complaintId;
+			document.getElementById('deleteModal').classList.remove('hidden');
+			document.getElementById('deleteModal').classList.add('flex');
+		}
+
+		document.getElementById('confirmDelete').addEventListener('click', function() {
+			if (complaintToDelete) {
+				fetch(`/admin/complaint/${complaintToDelete}/delete/`, {
+					method: 'POST',
+					headers: {
+						'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+						'Content-Type': 'application/json',
+					}
+				})
+				.then(response => {
+					if (response.ok) {
+						location.reload();
+					} else {
+						alert('Error deleting complaint');
+					}
+				})
+				.catch(error => {
+					console.error('Error:', error);
+					alert('Error deleting complaint');
+				});
+			}
+		});
+
+		document.getElementById('cancelDelete').addEventListener('click', function() {
+			document.getElementById('deleteModal').classList.add('hidden');
+			document.getElementById('deleteModal').classList.remove('flex');
+			complaintToDelete = null;
+		});
+
+		// Close modal on outside click
+		document.getElementById('deleteModal').addEventListener('click', function(e) {
+			if (e.target === this) {
+				document.getElementById('deleteModal').classList.add('hidden');
+				document.getElementById('deleteModal').classList.remove('flex');
+				complaintToDelete = null;
+			}
+		});
+	</script>
+</body>
+</html>
