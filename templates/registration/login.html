@@ -8,15 +8,22 @@
 	<script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-[#000000] text-[#f5f5f7]">
-	<div class="container max-w-md mx-auto px-4 py-8">
-		<header class="text-center mb-8">
-			<h1 class="text-3xl font-semibold mb-2">🕳️ Awaaz</h1>
-			<p class="text-zinc-400">Sign in to your account</p>
-		</header>
+	<div class="min-h-screen flex flex-col">
+		<!-- Navigation -->
+		{% include 'components/navigation.html' %}
+		
+		<!-- Main Content -->
+		<main class="flex-1 flex items-center justify-center py-8">
+			<div class="container max-w-md mx-auto px-4">
+				<header class="text-center mb-8">
+					<h1 class="text-3xl font-semibold mb-2">🕳️ Awaaz</h1>
+					<p class="text-zinc-400">Sign in to your account</p>
+				</header>
 		
 
 		
 		<div class="card p-6">
+			<!-- Login Form -->
 			<form method="post" class="space-y-4">
 				{% csrf_token %}
 				<div>
@@ -44,9 +51,12 @@
 			</div>
 		</div>
 		
-		<div class="text-center mt-6">
-			<a href="/" class="text-blue-400 hover:text-blue-300">← Back to Feed</a>
-		</div>
+				<div class="text-center mt-6">
+					<a href="{% url 'feed' %}" class="text-blue-400 hover:text-blue-300">← Back to Feed</a>
+				</div>
+			</div>
+		</main>
 	</div>
+	
 </body>
 </html>

@@ -18,7 +18,7 @@ def admin_login_view(request):
             user = User.objects.get(username=username)
             if user.check_password(password) and (user.is_staff or user.is_superuser):
                 from django.contrib.auth import login
-                login(request, user)
+                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
                 messages.success(request, f'Welcome, {user.username}!')
                 return redirect('admin_dashboard')
             else:

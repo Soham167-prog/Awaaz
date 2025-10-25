@@ -7,108 +7,167 @@
 	<link rel="stylesheet" href="/static/css/dark.css" />
 	<script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-[#0b0b0d] text-[#e6e6e6]">
-	<div class="container max-w-5xl mx-auto px-4">
-		<header class="flex items-center justify-between py-6">
-			<h1 class="text-2xl font-semibold">🕳️ Public Feed</h1>
-			<div class="space-x-3 text-sm">
-				<a class="text-blue-400 hover:text-blue-300" href="/new/">New Complaint</a>
-				{% if is_admin %}
-					<span class="text-zinc-400">|</span>
-					<a class="text-red-400 hover:text-red-300" href="/admin/dashboard/">Admin Panel</a>
-				{% endif %}
-				{% if request.user.is_authenticated %}
-					<span class="text-zinc-400">|</span>
-					<span class="text-zinc-400">{{ request.user.username }}</span>
-					<span class="text-zinc-400">|</span>
-					<a class="text-blue-400 hover:text-blue-300" href="/logout/">Logout</a>
-				{% else %}
-					<span class="text-zinc-400">|</span>
-					<a class="text-blue-400 hover:text-blue-300" href="/login/">Login</a>
-					<span class="text-zinc-400">|</span>
-					<a class="text-blue-400 hover:text-blue-300" href="/signup/">Sign up</a>
-				{% endif %}
-			</div>
-		</header>
-		<div class="card p-4 mb-6">
-			<form method="get" class="grid grid-cols-1 md:grid-cols-5 gap-4">
-				<div>
-					<label class="block mb-2 text-zinc-300">Severity</label>
-					<select name="severity" class="w-full rounded-md bg-[#0f0f14] border border-[#2a2a36] p-2">
-						<option value="">Any</option>
-						<option value="minor">Minor</option>
-						<option value="moderate">Moderate</option>
-						<option value="severe">Severe</option>
-					</select>
+<body class="bg-[#000000] text-[#f5f5f7]">
+	<div class="min-h-screen flex flex-col">
+		<!-- Navigation -->
+		{% include 'components/navigation.html' %}
+		
+		<!-- Main Content -->
+		<main class="flex-1 py-8">
+			<div class="container max-w-6xl mx-auto px-4">
+				<!-- Page Header -->
+				<div class="mb-8">
+					<h1 class="text-3xl font-bold mb-2">📊 Public Feed</h1>
+					<p class="text-zinc-400">Browse and filter community reports</p>
 				</div>
-				<div>
-					<label class="block mb-2 text-zinc-300">Location</label>
-					<select name="location" class="w-full rounded-md bg-[#0f0f14] border border-[#2a2a36] p-2">
-						<option value="">All Locations</option>
-						{% for loc in locations %}
-						<option value="{{ loc }}" {% if request.GET.location == loc %}selected{% endif %}>{{ loc }}</option>
-						{% endfor %}
-					</select>
+				<!-- Filters -->
+				<div class="card p-6 mb-8">
+					<h3 class="text-lg font-semibold mb-4">🔍 Filter Reports</h3>
+					<form method="get" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+						<div>
+							<label class="block mb-2 text-zinc-300">Severity</label>
+							<select name="severity" class="w-full rounded-md bg-[#0f0f14] border border-[#2a2a36] p-3 focus:border-blue-500 focus:outline-none">
+								<option value="">Any Severity</option>
+								<option value="minor" {% if request.GET.severity == 'minor' %}selected{% endif %}>Minor</option>
+								<option value="moderate" {% if request.GET.severity == 'moderate' %}selected{% endif %}>Moderate</option>
+								<option value="severe" {% if request.GET.severity == 'severe' %}selected{% endif %}>Severe</option>
+							</select>
+						</div>
+						<div>
+							<label class="block mb-2 text-zinc-300">Location</label>
+							<select name="location" class="w-full rounded-md bg-[#0f0f14] border border-[#2a2a36] p-3 focus:border-blue-500 focus:outline-none">
+								<option value="">All Locations</option>
+								{% for loc in locations %}
+								<option value="{{ loc }}" {% if request.GET.location == loc %}selected{% endif %}>{{ loc }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="md:col-span-2">
+							<label class="block mb-2 text-zinc-300">Search</label>
+							<input type="text" name="q" placeholder="Search reports..." class="w-full rounded-md bg-[#0f0f14] border border-[#2a2a36] p-3 focus:border-blue-500 focus:outline-none" value="{{ request.GET.q }}" />
+						</div>
+						<div>
+							<label class="block mb-2 text-zinc-300">Sort By</label>
+							<select name="sort" class="w-full rounded-md bg-[#0f0f14] border border-[#2a2a36] p-3 focus:border-blue-500 focus:outline-none">
+								<option value="new" {% if request.GET.sort == 'new' %}selected{% endif %}>Newest First</option>
+								<option value="top" {% if request.GET.sort == 'top' %}selected{% endif %}>Most Upvoted</option>
+							</select>
+						</div>
+						<div class="md:col-span-5 flex justify-end space-x-3">
+							<button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-md font-medium transition-all">
+								Apply Filters
+							</button>
+							<a href="{% url 'feed' %}" class="bg-gray-600 hover:bg-gray-500 text-white px-6 py-3 rounded-md font-medium transition-all">
+								Clear
+							</a>
+						</div>
+					</form>
 				</div>
-				<div class="md:col-span-2">
-					<label class="block mb-2 text-zinc-300">Search</label>
-					<input type="text" name="q" placeholder="Title, description, or location" class="w-full rounded-md bg-[#0f0f14] border border-[#2a2a36] p-2" value="{{ request.GET.q }}" />
+				<!-- Reports Grid -->
+				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+					{% for item in items %}
+						<div class="card p-4 relative group hover:shadow-lg transition-all duration-300">
+							<!-- Image -->
+							<a href="{% url 'complaint_detail' item.pk %}" class="block">
+								<img class="w-full h-48 object-cover rounded-lg mb-4" src="{{ item.image.url }}" alt="Complaint image" />
+							</a>
+							
+							<!-- Content -->
+							<div class="space-y-3">
+								<!-- Title and Severity -->
+								<div class="flex items-start justify-between">
+									<h3 class="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors">
+										{{ item.title|default:"Pothole Report" }}
+									</h3>
+									<span class="badge {% if item.true_severity %}{{ item.true_severity }}{% else %}{{ item.predicted_severity }}{% endif %} ml-2">
+										{% if item.true_severity %}{{ item.true_severity|capfirst }}{% else %}{{ item.predicted_severity|capfirst }}{% endif %}
+									</span>
+								</div>
+								
+								<!-- Description -->
+								{% if item.description %}
+									<p class="text-zinc-300 text-sm line-clamp-2">{{ item.description|truncatewords:20 }}</p>
+								{% endif %}
+								
+								<!-- Location -->
+								{% if item.location %}
+									<p class="text-blue-300 text-sm flex items-center">
+										<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+											<path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+										</svg>
+										{{ item.location }}
+									</p>
+								{% endif %}
+								
+								<!-- Meta Info -->
+								<div class="flex items-center justify-between text-sm text-zinc-400">
+									<div class="flex items-center space-x-3">
+										<span class="flex items-center">
+											<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+												<path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.994a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z"></path>
+											</svg>
+											{{ item.upvote_count }}
+										</span>
+										<span>By {{ item.user.username|default:"Anonymous" }}</span>
+									</div>
+									<span>{{ item.created_at|timesince }} ago</span>
+								</div>
+							</div>
+							
+							<!-- Admin Actions -->
+							{% if is_admin %}
+								<div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+									<button onclick="deleteComplaint({{ item.pk }})" class="bg-red-600 hover:bg-red-500 text-white p-2 rounded-full shadow-lg" title="Delete complaint">
+										<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+											<path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" clip-rule="evenodd"></path>
+											<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+										</svg>
+									</button>
+								</div>
+							{% endif %}
+						</div>
+					{% empty %}
+						<div class="col-span-full text-center py-12">
+							<div class="text-6xl mb-4">📭</div>
+							<h3 class="text-xl font-semibold text-zinc-300 mb-2">No Reports Found</h3>
+							<p class="text-zinc-400 mb-6">No complaints match your current filters.</p>
+							<a href="{% url 'upload' %}" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-md font-medium transition-all">
+								Create First Report
+							</a>
+						</div>
+					{% endfor %}
 				</div>
-				<div>
-					<label class="block mb-2 text-zinc-300">Sort</label>
-					<select name="sort" class="w-full rounded-md bg-[#0f0f14] border border-[#2a2a36] p-2">
-						<option value="new">Newest</option>
-						<option value="top">Top (upvotes)</option>
-					</select>
-				</div>
-				<div class="md:col-span-5 text-right">
-					<button type="submit" class="inline-flex items-center rounded-md bg-blue-600 hover:bg-blue-500 px-4 py-2">Apply</button>
-				</div>
-			</form>
-		</div>
-		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-			{% for item in items %}
-				<div class="card p-3 relative">
-					<a href="/complaint/{{ item.pk }}/"><img class="rounded-md" src="{{ item.image.url }}" /></a>
-					<p class="mt-2">
-						<strong class="text-lg">{{ item.title|default:"Pothole report" }}</strong>
-						<br />
-						<span class="badge {% if item.true_severity %}{{ item.true_severity }}{% else %}{{ item.predicted_severity }}{% endif %}">
-							{% if item.true_severity %}{{ item.true_severity|capfirst }}{% else %}{{ item.predicted_severity|capfirst }}{% endif %}
-						</span>
-						<span class="text-zinc-400">• Upvotes: {{ item.upvote_count }}</span>
-					</p>
-					{% if item.location %}
-					<p class="text-blue-300 text-sm">📍 {{ item.location }}</p>
-					{% endif %}
-					<p class="text-zinc-300 text-sm">{{ item.description|default:"" }}</p>
-					<p class="text-zinc-500 text-xs">By {{ item.user.username|default:"anonymous" }} · {{ item.created_at }}</p>
-					
-					{% if is_admin %}
-					<div class="absolute top-2 right-2">
-						<button onclick="deleteComplaint({{ item.pk }})" class="bg-red-600 hover:bg-red-500 text-white text-xs px-2 py-1 rounded" title="Delete complaint">
-							🗑️
-						</button>
+				<!-- Pagination -->
+				{% if items.has_other_pages %}
+					<div class="card p-4 mt-8">
+						<div class="flex items-center justify-between">
+							<div>
+								{% if items.has_previous %}
+									<a href="?page={{ items.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.severity %}&severity={{ request.GET.severity }}{% endif %}{% if request.GET.location %}&location={{ request.GET.location }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" 
+									   class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md transition-all">
+										← Previous
+									</a>
+								{% endif %}
+							</div>
+							<div class="text-zinc-300">
+								Page {{ items.number }} of {{ items.paginator.num_pages }}
+							</div>
+							<div>
+								{% if items.has_next %}
+									<a href="?page={{ items.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.severity %}&severity={{ request.GET.severity }}{% endif %}{% if request.GET.location %}&location={{ request.GET.location }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" 
+									   class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md transition-all">
+										Next →
+									</a>
+								{% endif %}
+							</div>
+						</div>
 					</div>
-					{% endif %}
-				</div>
-			{% empty %}
-				<p>No complaints yet.</p>
-			{% endfor %}
-		</div>
-		<div class="card p-3 mt-4 flex items-center justify-between">
-			<div>
-				{% if items.has_previous %}
-					<a class="text-blue-400 hover:text-blue-300" href="?page={{ items.previous_page_number }}">Previous</a>
 				{% endif %}
 			</div>
-			<div>Page {{ items.number }} of {{ items.paginator.num_pages }}</div>
-			<div>
-				{% if items.has_next %}
-					<a class="text-blue-400 hover:text-blue-300" href="?page={{ items.next_page_number }}">Next</a>
-				{% endif %}
-			</div>
-		</div>
+		</main>
+		
+		<!-- Floating Action Button -->
+		{% include 'components/floating_action.html' %}
 	</div>
 
 	<!-- Delete Confirmation Modal -->
