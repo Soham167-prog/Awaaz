@@ -64,8 +64,8 @@ python manage.py runserver
 
 7. **Access the application:**
    - Main site: http://127.0.0.1:8000/
-   - Admin panel: http://127.0.0.1:8000/admin/
-   - Django admin: http://127.0.0.1:8000/django-admin/
+   - Admin panel: http://127.0.0.1:8000/custom-admin/
+   - Django admin: http://127.0.0.1:8000/admin/
 
 ## 🎯 Usage
 
