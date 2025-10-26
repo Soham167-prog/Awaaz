@@ -19,10 +19,11 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 urlpatterns = [
+    # Django admin at /admin/
+    path('admin/', admin.site.urls),
     # Serve the website (complaints app) at root
     path('', include('complaints.urls')),
-    # Admin and API routes
-    path('admin/', admin.site.urls),
+    # API routes
     path('api/', include('api.urls')),
     
 ]

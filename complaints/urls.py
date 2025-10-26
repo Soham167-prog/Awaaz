@@ -15,11 +15,11 @@ urlpatterns = [
 	path('complaint/<int:pk>/correct/', views.correct_severity_view, name='complaint_correct'),
 	path('complaint/<int:pk>/edit/', views.edit_complaint_view, name='complaint_edit'),
 	path('complaint/<int:pk>/delete/', views.delete_complaint_view, name='complaint_delete'),
-	# admin
-	path('admin/', admin_views.admin_login_view, name='admin_login'),
-	path('admin/dashboard/', admin_views.admin_dashboard_view, name='admin_dashboard'),
-	path('admin/complaint/<int:pk>/delete/', admin_views.admin_delete_complaint_view, name='admin_delete_complaint'),
-	path('admin/logout/', admin_views.admin_logout_view, name='admin_logout'),
+	# custom admin panel
+	path('custom-admin/', admin_views.admin_login_view, name='admin_login'),
+	path('custom-admin/dashboard/', admin_views.admin_dashboard_view, name='admin_dashboard'),
+	path('custom-admin/complaint/<int:pk>/delete/', admin_views.admin_delete_complaint_view, name='admin_delete_complaint'),
+	path('custom-admin/logout/', admin_views.admin_logout_view, name='admin_logout'),
 	# auth
 	path('login/', auth_views.LoginView.as_view(template_name='registration/login.html', redirect_authenticated_user=True), name='login'),
 	path('logout/', views_auth.logout_view, name='logout'),
