@@ -13,6 +13,11 @@ torchvision>=0.13.0
 pytest>=7.0.0
 pytest-django>=4.5.0
 
+# Jupyter and Visualization (for notebook demo)
+jupyter>=1.0.0
+matplotlib>=3.5.0
+numpy>=1.21.0
+
 # Production
 gunicorn>=20.1.0
 whitenoise>=6.0.0
