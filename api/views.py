@@ -2,10 +2,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions, parsers
 from django.urls import reverse
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from complaints.models import Complaint
 from complaints.views import _save_to_mongo
 from complaints.services import predict_and_generate_text
+
+User = get_user_model()
+
 from .serializers import (
     ComplaintCreateSerializer,
     AnalyzeResponseSerializer,

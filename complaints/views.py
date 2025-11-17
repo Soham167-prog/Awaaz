@@ -7,9 +7,11 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
 import json
-from .forms import ComplaintForm, CommentForm, SeverityCorrectionForm, EditComplaintForm
-from .models import Complaint
+from .forms import ComplaintForm, CommentForm, SeverityCorrectionForm, EditComplaintForm, ReportForm
+from .models import Complaint, Report, UserProfile, UserNotification, Comment, Announcement
+from .decorators import citizen_required
 from .services import predict_and_generate_text
+from django.utils import timezone
 
 # Optional: Mongo GridFS
 try:
@@ -70,8 +72,22 @@ def feed_view(request):
         'locations': locations
     })
 
+def _check_user_banned(user):
+    """Check if user is banned and return True if banned"""
+    if not user.is_authenticated:
+        return False
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+    return profile.is_currently_banned()
+
+
 @login_required
+@citizen_required
 def upload_view(request):
+    # Check if user is banned
+    if _check_user_banned(request.user):
+        messages.error(request, 'Your account has been banned. You cannot create complaints.')
+        return redirect('feed')
+    
     if request.method == 'POST':
         # Check if this is an AJAX request for analysis
         if request.headers.get('Content-Type') == 'application/json' or 'application/json' in request.headers.get('Content-Type', ''):
@@ -163,9 +179,21 @@ def detail_view(request, pk: int):
     obj = get_object_or_404(Complaint, pk=pk)
     comment_form = CommentForm()
     corr_form = SeverityCorrectionForm(instance=obj)
-    return render(request, 'complaints/detail.html', {'obj': obj, 'comment_form': comment_form, 'corr_form': corr_form})
+    is_gov_user = _is_government_user(request.user) if request.user.is_authenticated else False
+    official_comments = obj.comments.filter(is_official_comment=True).order_by('-created_at')
+    citizen_comments = obj.comments.filter(is_official_comment=False).order_by('-created_at')
+
+    return render(request, 'complaints/detail.html', {
+        'obj': obj,
+        'comment_form': comment_form,
+        'corr_form': corr_form,
+        'is_gov_user': is_gov_user,
+        'official_comments': official_comments,
+        'citizen_comments': citizen_comments,
+    })
 
 @login_required
+@citizen_required
 def upvote_view(request, pk: int):
     obj = get_object_or_404(Complaint, pk=pk)
     if request.user in obj.upvotes.all():
@@ -175,6 +203,7 @@ def upvote_view(request, pk: int):
     return redirect('complaint_detail', pk=pk)
 
 @login_required
+@citizen_required
 def comment_create_view(request, pk: int):
     obj = get_object_or_404(Complaint, pk=pk)
     if request.method == 'POST':
@@ -187,6 +216,7 @@ def comment_create_view(request, pk: int):
     return redirect('complaint_detail', pk=pk)
 
 @login_required
+@citizen_required
 def correct_severity_view(request, pk: int):
     obj = get_object_or_404(Complaint, pk=pk)
     if request.method == 'POST':
@@ -197,6 +227,7 @@ def correct_severity_view(request, pk: int):
     return redirect('complaint_detail', pk=pk)
 
 @login_required
+@citizen_required
 def edit_complaint_view(request, pk: int):
     obj = get_object_or_404(Complaint, pk=pk)
     
@@ -232,3 +263,119 @@ def delete_complaint_view(request, pk: int):
         return redirect('/')
     
     return render(request, 'complaints/delete_confirm.html', {'complaint': obj})
+
+
+@login_required
+@citizen_required
+def report_complaint_view(request, pk: int):
+    """Report a complaint"""
+    complaint = get_object_or_404(Complaint, pk=pk)
+    
+    # Check if user is banned
+    if _check_user_banned(request.user):
+        messages.error(request, 'Your account has been banned. You cannot report complaints.')
+        return redirect('complaint_detail', pk=pk)
+    
+    # Check if user already reported this complaint
+    existing_report = Report.objects.filter(complaint=complaint, reporter=request.user).first()
+    if existing_report:
+        messages.info(request, 'You have already reported this complaint.')
+        return redirect('complaint_detail', pk=pk)
+    
+    # Can't report your own complaint
+    if complaint.user == request.user:
+        messages.error(request, 'You cannot report your own complaint.')
+        return redirect('complaint_detail', pk=pk)
+    
+    if request.method == 'POST':
+        form = ReportForm(request.POST)
+        if form.is_valid():
+            report = form.save(commit=False)
+            report.complaint = complaint
+            report.reporter = request.user
+            report.save()
+            messages.success(request, 'Thank you for reporting. We will review this complaint.')
+            return redirect('complaint_detail', pk=pk)
+    else:
+        form = ReportForm()
+    
+    return render(request, 'complaints/report.html', {'form': form, 'complaint': complaint})
+
+
+def _is_government_user(user):
+    """Check if user is a government user"""
+    if not user.is_authenticated:
+        return False
+    try:
+        profile = user.profile
+        return profile.is_government_user
+    except UserProfile.DoesNotExist:
+        return False
+
+
+@login_required
+def mark_complaint_resolved_view(request, pk: int):
+    """Government user view to mark complaint as resolved"""
+    complaint = get_object_or_404(Complaint, pk=pk)
+    
+    # Check if user is government user
+    if not _is_government_user(request.user):
+        messages.error(request, 'Only government users can mark complaints as resolved.')
+        return redirect('complaint_detail', pk=pk)
+    
+    if request.method == 'POST':
+        resolution_comment = request.POST.get('resolution_comment', '')
+        
+        # Mark complaint as resolved
+        complaint.is_resolved = True
+        complaint.resolved_at = timezone.now()
+        complaint.resolved_by = request.user
+        complaint.save()
+        
+        # Create resolution comment if provided
+        if resolution_comment:
+            Comment.objects.create(
+                complaint=complaint,
+                user=request.user,
+                text=resolution_comment,
+                is_resolution_comment=True,
+                is_official_comment=True
+            )
+        
+        # Create notification for complaint owner
+        UserNotification.objects.create(
+            user=complaint.user,
+            notification_type='complaint_resolved',
+            title='Complaint Resolved',
+            message=f'Your complaint "{complaint.title}" has been marked as resolved by a government official.'
+        )
+        
+        messages.success(request, 'Complaint marked as resolved successfully!')
+        return redirect('complaint_detail', pk=pk)
+    
+    return render(request, 'complaints/mark_resolved.html', {'complaint': complaint})
+
+
+@login_required
+def notifications_view(request):
+    """View user notifications"""
+    notifications = request.user.notifications.all()[:20]  # Last 20 notifications
+    unread_count = request.user.notifications.filter(is_read=False).count()
+    
+    # Mark all as read when viewing
+    request.user.notifications.filter(is_read=False).update(is_read=True)
+    
+    return render(request, 'complaints/notifications.html', {
+        'notifications': notifications,
+        'unread_count': unread_count
+    })
+
+
+def announcements_view(request):
+    announcements = Announcement.objects.filter(
+        is_published=True,
+        audience__in=['all', 'citizen']
+    ).order_by('-published_at')
+    return render(request, 'announcements/list.html', {
+        'announcements': announcements,
+    })

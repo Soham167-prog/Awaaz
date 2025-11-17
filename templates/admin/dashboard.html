@@ -14,9 +14,13 @@
 			<div class="space-x-3 text-sm">
 				<a class="text-blue-400 hover:text-blue-300" href="/">Public Feed</a>
 				<span class="text-zinc-400">|</span>
+				<a class="text-yellow-400 hover:text-yellow-300" href="{% url 'admin_reports' %}">Reports</a>
+				<span class="text-zinc-400">|</span>
+				<a class="text-green-400 hover:text-green-300" href="{% url 'admin_government_users' %}">Government Users</a>
+				<span class="text-zinc-400">|</span>
 				<span class="text-zinc-400">Admin: {{ request.user.username }}</span>
 				<span class="text-zinc-400">|</span>
-				<a class="text-red-400 hover:text-red-300" href="/admin/logout/">Logout</a>
+				<a class="text-red-400 hover:text-red-300" href="{% url 'admin_logout' %}">Logout</a>
 			</div>
 		</header>
 
@@ -46,6 +50,25 @@
 				<h3 class="text-sm font-medium text-zinc-400">Total Users</h3>
 				<p class="text-2xl font-bold">{{ total_users }}</p>
 			</div>
+		</div>
+
+		<!-- Quick Actions -->
+		<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+			<a href="{% url 'admin_government_users' %}" class="card p-4 hover:border-green-500 transition-colors">
+				<h3 class="text-sm font-medium text-zinc-400 mb-1">Government Team</h3>
+				<p class="text-lg font-semibold text-green-300">Manage Govt Users →</p>
+				<p class="text-xs text-zinc-500 mt-2">Create, disable, or review government operator accounts.</p>
+			</a>
+			<a href="{% url 'government_announcements' %}" class="card p-4 hover:border-blue-500 transition-colors">
+				<h3 class="text-sm font-medium text-zinc-400 mb-1">Announcements</h3>
+				<p class="text-lg font-semibold text-blue-300">Launch Announcement Console →</p>
+				<p class="text-xs text-zinc-500 mt-2">Draft and publish citizen or internal announcements.</p>
+			</a>
+			<a href="{% url 'government_dashboard' %}" class="card p-4 hover:border-yellow-500 transition-colors">
+				<h3 class="text-sm font-medium text-zinc-400 mb-1">Gov Workspace</h3>
+				<p class="text-lg font-semibold text-yellow-300">Open Gov Portal →</p>
+				<p class="text-xs text-zinc-500 mt-2">Jump into the government resolution dashboard.</p>
+			</a>
 		</div>
 
 		<!-- Filter and Search -->
@@ -133,7 +156,7 @@
 							<td class="py-3 px-2">
 								<div class="flex space-x-2">
 									<a href="/complaint/{{ complaint.id }}/" class="text-blue-400 hover:text-blue-300 text-sm">View</a>
-									<button onclick="deleteComplaint({{ complaint.id }})" class="text-red-400 hover:text-red-300 text-sm">Delete</button>
+									<button type="button" class="text-red-400 hover:text-red-300 text-sm js-delete-btn" data-complaint-id="{{ complaint.id }}">Delete</button>
 								</div>
 							</td>
 						</tr>
@@ -176,22 +199,29 @@
 			</div>
 		</div>
 	</div>
+	<input type="hidden" id="admin-csrf-token" value="{{ csrf_token }}">
 
 	<script>
 		let complaintToDelete = null;
+		const deleteModal = document.getElementById('deleteModal');
+		const confirmDeleteBtn = document.getElementById('confirmDelete');
+		const cancelDeleteBtn = document.getElementById('cancelDelete');
+		const csrfToken = document.getElementById('admin-csrf-token').value;
 
-		function deleteComplaint(complaintId) {
-			complaintToDelete = complaintId;
-			document.getElementById('deleteModal').classList.remove('hidden');
-			document.getElementById('deleteModal').classList.add('flex');
-		}
+		document.querySelectorAll('.js-delete-btn').forEach(button => {
+			button.addEventListener('click', () => {
+				complaintToDelete = button.dataset.complaintId;
+				deleteModal.classList.remove('hidden');
+				deleteModal.classList.add('flex');
+			});
+		});
 
-		document.getElementById('confirmDelete').addEventListener('click', function() {
+		confirmDeleteBtn.addEventListener('click', function() {
 			if (complaintToDelete) {
 				fetch(`/admin/complaint/${complaintToDelete}/delete/`, {
 					method: 'POST',
 					headers: {
-						'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+						'X-CSRFToken': csrfToken,
 						'Content-Type': 'application/json',
 					}
 				})
@@ -209,9 +239,9 @@
 			}
 		});
 
-		document.getElementById('cancelDelete').addEventListener('click', function() {
-			document.getElementById('deleteModal').classList.add('hidden');
-			document.getElementById('deleteModal').classList.remove('flex');
+		cancelDeleteBtn.addEventListener('click', function() {
+			deleteModal.classList.add('hidden');
+			deleteModal.classList.remove('flex');
 			complaintToDelete = null;
 		});
 

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Awaaz | Admin - Government Users</title>
+	<link rel="stylesheet" href="/static/css/dark.css" />
+	<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#000000] text-[#f5f5f7]">
+	<div class="container max-w-7xl mx-auto px-4 py-8">
+		<header class="flex items-center justify-between py-6">
+			<h1 class="text-2xl font-semibold text-red-500">🏛️ Government Users</h1>
+			<div class="space-x-3 text-sm">
+				<a class="text-blue-400 hover:text-blue-300" href="{% url 'admin_dashboard' %}">Dashboard</a>
+				<span class="text-zinc-400">|</span>
+				<a class="text-green-400 hover:text-green-300" href="{% url 'admin_create_government_user' %}">+ Create Government User</a>
+				<span class="text-zinc-400">|</span>
+				<a class="text-red-400 hover:text-red-300" href="{% url 'admin_logout' %}">Logout</a>
+			</div>
+		</header>
+
+		{% if messages %}
+			{% for message in messages %}
+				<div class="mb-4 p-4 rounded-md {% if message.tags == 'error' %}bg-red-900 text-red-200{% else %}bg-green-900 text-green-200{% endif %}">
+					{{ message }}
+				</div>
+			{% endfor %}
+		{% endif %}
+
+	<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+		<div class="card p-6 lg:col-span-2">
+			<h2 class="text-lg font-semibold mb-4">Government Users</h2>
+			<div class="overflow-x-auto">
+				<table class="w-full">
+					<thead>
+						<tr class="border-b border-[#2a2a36]">
+							<th class="text-left p-3 text-sm font-medium text-zinc-400">Username</th>
+							<th class="text-left p-3 text-sm font-medium text-zinc-400">Email</th>
+							<th class="text-left p-3 text-sm font-medium text-zinc-400">Created</th>
+							<th class="text-left p-3 text-sm font-medium text-zinc-400">Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for profile in government_users %}
+						<tr class="border-b border-[#2a2a36] hover:bg-[#1a1a1a]">
+							<td class="p-3">{{ profile.user.username }}</td>
+							<td class="p-3 text-sm text-zinc-400">{{ profile.user.email|default:"No email" }}</td>
+							<td class="p-3 text-sm text-zinc-400">{{ profile.created_at|date:"M d, Y" }}</td>
+							<td class="p-3 text-sm space-x-2">
+								<span class="px-2 py-1 rounded text-xs font-medium bg-green-900 text-green-200">Government</span>
+								<form method="post" class="inline">
+									{% csrf_token %}
+									<input type="hidden" name="action" value="demote">
+									<input type="hidden" name="user_id" value="{{ profile.user.id }}">
+									<button type="submit" class="text-red-400 hover:text-red-300 text-xs">Remove</button>
+								</form>
+							</td>
+						</tr>
+						{% empty %}
+						<tr>
+							<td colspan="4" class="p-6 text-center text-zinc-400">No government users created yet.</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div class="card p-6 space-y-4">
+			<h2 class="text-lg font-semibold">Promote Existing Account</h2>
+			<p class="text-sm text-zinc-400">Enter the username of an existing user to grant government access.</p>
+			<form method="post" class="space-y-3">
+				{% csrf_token %}
+				<input type="hidden" name="action" value="promote_existing">
+				<label class="block text-sm text-zinc-300">Username</label>
+				<input type="text" name="username" class="w-full rounded-md bg-[#0f0f14] border border-[#2a2a36] p-2" placeholder="e.g. bmc_officer" required>
+				<button type="submit" class="w-full rounded-md bg-green-600 hover:bg-green-500 py-2 font-medium">Promote to Government User</button>
+			</form>
+			<p class="text-xs text-zinc-500">Need a brand new account? Use the <a class="text-blue-400" href="{% url 'admin_create_government_user' %}">Create Government User</a> form.</p>
+		</div>
+	</div>
+	</div>
+</body>
+</html>
+

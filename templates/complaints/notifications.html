@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Awaaz | Notifications</title>
+	<link rel="stylesheet" href="/static/css/dark.css" />
+	<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#0b0b0d] text-[#e6e6e6]">
+	<div class="container max-w-4xl mx-auto px-4 py-8">
+		<header class="flex items-center justify-between py-6">
+			<h1 class="text-2xl font-semibold">🔔 Notifications</h1>
+			<a class="text-blue-400 hover:text-blue-300" href="{% url 'feed' %}">← Back to Feed</a>
+		</header>
+		{% include 'components/flash_messages.html' %}
+
+		<div class="space-y-4">
+			{% for notification in notifications %}
+				<div class="card p-4 {% if not notification.is_read %}border-l-4 border-blue-500{% endif %}">
+					<div class="flex items-start justify-between">
+						<div class="flex-1">
+							<div class="flex items-center gap-2 mb-2">
+								<span class="px-2 py-1 rounded text-xs font-medium
+									{% if notification.notification_type == 'warning' %}bg-yellow-900 text-yellow-200
+									{% elif notification.notification_type == 'ban' %}bg-red-900 text-red-200
+									{% elif notification.notification_type == 'complaint_resolved' %}bg-green-900 text-green-200
+									{% else %}bg-blue-900 text-blue-200{% endif %}">
+									{{ notification.get_notification_type_display }}
+								</span>
+								{% if not notification.is_read %}
+									<span class="px-2 py-1 bg-blue-600 text-white text-xs rounded">New</span>
+								{% endif %}
+							</div>
+							<h3 class="font-semibold mb-1">{{ notification.title }}</h3>
+							<p class="text-sm text-zinc-300">{{ notification.message }}</p>
+							<p class="text-xs text-zinc-500 mt-2">{{ notification.created_at|date:"F d, Y H:i" }}</p>
+						</div>
+					</div>
+				</div>
+			{% empty %}
+				<div class="card p-8 text-center">
+					<p class="text-zinc-400">No notifications yet.</p>
+				</div>
+			{% endfor %}
+		</div>
+	</div>
+</body>
+</html>
+

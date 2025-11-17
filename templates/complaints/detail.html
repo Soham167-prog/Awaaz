@@ -9,6 +9,7 @@
 </head>
 <body class="bg-[#0b0b0d] text-[#e6e6e6]">
 	<div class="container max-w-5xl mx-auto px-4">
+		{% include 'components/flash_messages.html' %}
 		<header class="flex items-center justify-between py-6">
 			<h1 class="text-2xl font-semibold">🕳️ Result</h1>
 			<div class="space-x-3 text-sm">
@@ -22,6 +23,14 @@
 				<img class="rounded-md" src="{{ obj.image.url }}" alt="uploaded" />
 			</div>
 			<div class="card p-4 space-y-3">
+				{% if obj.is_resolved %}
+					<div class="bg-green-900/30 border border-green-700 rounded-md p-3 mb-3">
+						<p class="text-green-200 font-semibold">✅ RESOLVED</p>
+						<p class="text-sm text-green-300">
+							Resolved by: {{ obj.resolved_by.username }} on {{ obj.resolved_at|date:"M d, Y" }}
+						</p>
+					</div>
+				{% endif %}
 				<p class="text-sm">
 					<span class="badge {{ obj.predicted_severity }}">Predicted: {{ obj.predicted_severity|capfirst }}</span>
 					<span class="text-zinc-400">Confidence: {{ obj.confidence|floatformat:2 }}</span>
@@ -30,13 +39,21 @@
 					<p class="text-xs text-zinc-400">Corrected: <span class="badge {{ obj.true_severity }}">{{ obj.true_severity|capfirst }}</span></p>
 				{% endif %}
 				<pre class="whitespace-pre-wrap text-sm leading-relaxed">{{ obj.generated_text }}</pre>
-				<div class="flex items-center gap-3">
+				<div class="flex items-center gap-3 flex-wrap">
 					<span class="text-zinc-400 text-sm">Upvotes: {{ obj.upvote_count }}</span>
 					{% if request.user.is_authenticated %}
 						<form method="post" action="/complaint/{{ obj.pk }}/upvote/">
 							{% csrf_token %}
 							<button type="submit" class="rounded-md bg-blue-600 hover:bg-blue-500 px-3 py-1">{% if request.user in obj.upvotes.all %}Remove Upvote{% else %}Upvote{% endif %}</button>
 						</form>
+						{% if obj.user != request.user %}
+							<a href="{% url 'complaint_report' obj.pk %}" class="rounded-md bg-red-600 hover:bg-red-500 px-3 py-1">Report</a>
+						{% endif %}
+						{% if not obj.is_resolved %}
+							{% if is_gov_user %}
+								<a href="{% url 'complaint_resolve' obj.pk %}" class="rounded-md bg-green-600 hover:bg-green-500 px-3 py-1">Mark Resolved</a>
+							{% endif %}
+						{% endif %}
 						{% if obj.user == request.user or request.user.is_staff %}
 							<a href="{% url 'complaint_edit' obj.pk %}" class="rounded-md bg-green-600 hover:bg-green-500 px-3 py-1">Edit</a>
 						{% endif %}
@@ -50,39 +67,65 @@
 			</div>
 		</div>
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-			<div class="card p-4">
-				<h3 class="font-semibold mb-3">Comments</h3>
-				<div class="space-y-3">
-					{% for c in obj.comments.all %}
-						<div>
-							<p class="text-sm"><strong>{{ c.user.username }}</strong> · <span class="text-zinc-500">{{ c.created_at }}</span></p>
-							<p class="text-sm text-zinc-200">{{ c.text }}</p>
-							<hr class="border-[#20202a] mt-3" />
-						</div>
-					{% empty %}
-						<p class="text-sm text-zinc-400">No comments yet.</p>
-					{% endfor %}
+			<div class="card p-4 space-y-6">
+				{% if official_comments %}
+				<div>
+					<h3 class="font-semibold mb-3 text-green-400">Official Updates</h3>
+					<div class="space-y-3">
+						{% for c in official_comments %}
+							<div class="bg-green-900/20 border border-green-700 rounded-md p-3">
+								<p class="text-sm font-semibold text-green-200 flex items-center gap-2">
+									{{ c.user.username }}
+									{% if c.is_resolution_comment %}
+										<span class="px-2 py-1 bg-green-700 text-green-100 text-xs rounded">RESOLVED</span>
+									{% else %}
+										<span class="px-2 py-1 bg-green-800 text-green-200 text-xs rounded">OFFICIAL</span>
+									{% endif %}
+								</p>
+								<p class="text-xs text-green-200/80">{{ c.created_at|date:"M d, Y H:i" }}</p>
+								<p class="text-sm text-green-100 mt-2">{{ c.text }}</p>
+							</div>
+						{% endfor %}
+					</div>
 				</div>
-				{% if request.user.is_authenticated %}
+				{% endif %}
+
+				<div>
+					<h3 class="font-semibold mb-3">Community Comments</h3>
+					<div class="space-y-3">
+						{% for c in citizen_comments %}
+							<div>
+								<p class="text-sm"><strong>{{ c.user.username }}</strong> · <span class="text-zinc-500">{{ c.created_at|date:"M d, Y H:i" }}</span></p>
+								<p class="text-sm text-zinc-200">{{ c.text }}</p>
+								<hr class="border-[#20202a] mt-3" />
+							</div>
+						{% empty %}
+							<p class="text-sm text-zinc-400">No comments yet.</p>
+						{% endfor %}
+					</div>
+				</div>
+
+				{% if request.user.is_authenticated and not is_gov_user and not is_admin_user %}
+				<div>
+					<h3 class="font-semibold mb-3">Join the discussion</h3>
 					<form method="post" action="/complaint/{{ obj.pk }}/comment/" class="mt-3">
 						{% csrf_token %}
 						{{ comment_form.text }}
 						<button type="submit" class="mt-2 rounded-md bg-blue-600 hover:bg-blue-500 px-3 py-1">Comment</button>
 					</form>
-				{% else %}
-					<small><a class="text-blue-400 hover:text-blue-300" href="/login/">Login to comment</a></small>
+				</div>
 				{% endif %}
 			</div>
 			<div class="card p-4">
 				<h3 class="font-semibold mb-3">Is severity wrong?</h3>
-				{% if request.user.is_authenticated %}
+				{% if request.user.is_authenticated and not is_gov_user and not is_admin_user %}
 					<form method="post" action="/complaint/{{ obj.pk }}/correct/" class="flex items-center gap-3">
 						{% csrf_token %}
 						{{ corr_form.true_severity }}
 						<button type="submit" class="rounded-md bg-blue-600 hover:bg-blue-500 px-3 py-1">Submit correction</button>
 					</form>
 				{% else %}
-					<small><a class="text-blue-400 hover:text-blue-300" href="/login/">Login to suggest a correction</a></small>
+					<p class="text-sm text-zinc-400">Severity corrections are limited to citizens.</p>
 				{% endif %}
 			</div>
 		</div>
