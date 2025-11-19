@@ -27,12 +27,18 @@
 				{% csrf_token %}
 				<div>
 					<label class="block text-sm font-medium text-zinc-300 mb-2">Admin Username</label>
-					<input type="text" name="username" required class="w-full rounded-md bg-[#0f0f14] border border-[#2a2a36] p-3 focus:border-red-500 focus:outline-none" placeholder="Enter admin username">
+					<input type="text" name="username" required 
+						class="form-control w-full rounded-md border border-[#2a2a36] p-3 focus:border-red-500 focus:outline-none" 
+						placeholder="Enter admin username"
+						style="background-color: #000000 !important; color: #f5f5f7 !important; border: 1px solid #2a2a36 !important;">
 				</div>
 				
 				<div>
 					<label class="block text-sm font-medium text-zinc-300 mb-2">Password</label>
-					<input type="password" name="password" required class="w-full rounded-md bg-[#0f0f14] border border-[#2a2a36] p-3 focus:border-red-500 focus:outline-none" placeholder="Enter admin password">
+					<input type="password" name="password" required 
+						class="form-control w-full rounded-md border border-[#2a2a36] p-3 focus:border-red-500 focus:outline-none" 
+						placeholder="Enter admin password"
+						style="background-color: #000000 !important; color: #f5f5f7 !important; border: 1px solid #2a2a36 !important;">
 				</div>
 				
 				<button type="submit" class="w-full inline-flex items-center justify-center rounded-md bg-red-600 hover:bg-red-500 px-4 py-3 font-medium">

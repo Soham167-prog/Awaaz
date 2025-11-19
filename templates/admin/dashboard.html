@@ -52,6 +52,37 @@
 			</div>
 		</div>
 
+		<!-- Recently Resolved -->
+		{% if recently_resolved %}
+		<div class="card p-6 mb-6">
+			<h2 class="text-xl font-semibold mb-4">Recently Resolved</h2>
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+				{% for complaint in recently_resolved %}
+				<div class="border border-green-700/40 rounded-md p-4 bg-green-900/10">
+					<p class="flex items-center justify-between text-sm text-zinc-300">
+						<span class="font-semibold text-white">{{ complaint.title }}</span>
+						<span class="text-xs text-green-300">Resolved {{ complaint.resolved_at|timesince }} ago</span>
+					</p>
+					<p class="text-xs text-zinc-500 mt-1">
+						By
+						{% if complaint.resolved_by %}
+							{{ complaint.resolved_by.username }}
+						{% else %}
+							Unknown
+						{% endif %}
+					</p>
+					<p class="text-sm text-zinc-300 mt-2">{{ complaint.description|truncatewords:15 }}</p>
+					<div class="mt-3 flex items-center gap-2">
+						<a href="{% url 'government_complaint_detail' complaint.pk %}" class="text-green-300 hover:text-green-200 text-sm">View details →</a>
+						<span class="text-zinc-500">|</span>
+						<a href="{% url 'complaint_detail' complaint.pk %}" class="text-blue-300 hover:text-blue-200 text-sm">View as Citizen</a>
+					</div>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+		{% endif %}
+
 		<!-- Quick Actions -->
 		<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
 			<a href="{% url 'admin_government_users' %}" class="card p-4 hover:border-green-500 transition-colors">
@@ -156,7 +187,11 @@
 							<td class="py-3 px-2">
 								<div class="flex space-x-2">
 									<a href="/complaint/{{ complaint.id }}/" class="text-blue-400 hover:text-blue-300 text-sm">View</a>
-									<button type="button" class="text-red-400 hover:text-red-300 text-sm js-delete-btn" data-complaint-id="{{ complaint.id }}">Delete</button>
+									<button type="button"
+										class="text-red-400 hover:text-red-300 text-sm js-delete-btn"
+										data-delete-url="{% url 'admin_delete_complaint' complaint.id %}">
+										Delete
+									</button>
 								</div>
 							</td>
 						</tr>
@@ -202,7 +237,7 @@
 	<input type="hidden" id="admin-csrf-token" value="{{ csrf_token }}">
 
 	<script>
-		let complaintToDelete = null;
+		let deleteUrl = null;
 		const deleteModal = document.getElementById('deleteModal');
 		const confirmDeleteBtn = document.getElementById('confirmDelete');
 		const cancelDeleteBtn = document.getElementById('cancelDelete');
@@ -210,15 +245,15 @@
 
 		document.querySelectorAll('.js-delete-btn').forEach(button => {
 			button.addEventListener('click', () => {
-				complaintToDelete = button.dataset.complaintId;
+				deleteUrl = button.dataset.deleteUrl;
 				deleteModal.classList.remove('hidden');
 				deleteModal.classList.add('flex');
 			});
 		});
 
 		confirmDeleteBtn.addEventListener('click', function() {
-			if (complaintToDelete) {
-				fetch(`/admin/complaint/${complaintToDelete}/delete/`, {
+			if (deleteUrl) {
+				fetch(deleteUrl, {
 					method: 'POST',
 					headers: {
 						'X-CSRFToken': csrfToken,
@@ -242,7 +277,7 @@
 		cancelDeleteBtn.addEventListener('click', function() {
 			deleteModal.classList.add('hidden');
 			deleteModal.classList.remove('flex');
-			complaintToDelete = null;
+			deleteUrl = null;
 		});
 
 		// Close modal on outside click
@@ -250,7 +285,7 @@
 			if (e.target === this) {
 				document.getElementById('deleteModal').classList.add('hidden');
 				document.getElementById('deleteModal').classList.remove('flex');
-				complaintToDelete = null;
+				deleteUrl = null;
 			}
 		});
 	</script>

@@ -59,7 +59,6 @@
 						<p class="text-sm text-zinc-300 mt-2">{{ complaint.description|default:"No description"|truncatewords:25 }}</p>
 						<div class="mt-3 flex items-center justify-between text-sm">
 							<a href="{% url 'government_complaint_detail' complaint.pk %}" class="text-green-300 hover:text-green-200">Open details →</a>
-							<a href="{% url 'complaint_resolve' complaint.pk %}" class="text-green-400 hover:text-green-300">Mark resolved</a>
 						</div>
 					</div>
 					{% empty %}

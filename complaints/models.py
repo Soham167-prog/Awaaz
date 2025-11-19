@@ -24,9 +24,14 @@ class Complaint(models.Model):
     is_resolved = models.BooleanField(default=False)
     resolved_at = models.DateTimeField(null=True, blank=True)
     resolved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='resolved_complaints')
+    upvotes = models.ManyToManyField(User, related_name='complaints_upvoted', blank=True)
 
     def __str__(self):
         return f"{self.title} - {self.get_true_severity_display() if self.true_severity else self.get_predicted_severity_display()}"
+
+    @property
+    def upvote_count(self):
+        return self.upvotes.count()
 
 class Comment(models.Model):
     complaint = models.ForeignKey(Complaint, on_delete=models.CASCADE, related_name='comments')

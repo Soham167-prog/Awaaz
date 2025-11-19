@@ -39,17 +39,37 @@ def complaint_detail_view(request, pk):
     complaint = get_object_or_404(Complaint, pk=pk)
     comment_form = GovernmentCommentForm()
 
-    if request.method == 'POST' and request.POST.get('action') == 'comment':
-        comment_form = GovernmentCommentForm(request.POST)
-        if comment_form.is_valid():
-            comment: Comment = comment_form.save(commit=False)
-            comment.complaint = complaint
-            comment.user = request.user
-            comment.is_official_comment = True
-            comment.save()
-            messages.success(request, 'Official comment added successfully.')
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'mark_resolved':
+            if not complaint.is_resolved:
+                complaint.is_resolved = True
+                complaint.resolved_at = timezone.now()
+                complaint.resolved_by = request.user
+                complaint.save()
+                messages.success(request, 'Complaint marked as resolved.')
+                # Notify original user
+                from .models import UserNotification
+                UserNotification.objects.create(
+                    user=complaint.user,
+                    notification_type='complaint_resolved',
+                    title='Complaint Resolved',
+                    message=f'Your complaint "{complaint.title}" has been marked as resolved by a government official.'
+                )
+            else:
+                messages.info(request, 'Complaint is already resolved.')
             return redirect('government_complaint_detail', pk=pk)
-        messages.error(request, 'Please correct the errors in your comment.')
+        elif action == 'comment':
+            comment_form = GovernmentCommentForm(request.POST)
+            if comment_form.is_valid():
+                comment: Comment = comment_form.save(commit=False)
+                comment.complaint = complaint
+                comment.user = request.user
+                comment.is_official_comment = True
+                comment.save()
+                messages.success(request, 'Official comment added successfully.')
+                return redirect('government_complaint_detail', pk=pk)
+            messages.error(request, 'Please correct the errors in your comment.')
 
     official_comments = complaint.comments.filter(is_official_comment=True).order_by('-created_at')
     citizen_comments = complaint.comments.filter(is_official_comment=False).order_by('-created_at')
@@ -91,18 +111,16 @@ def announcement_create_view(request):
 
 
 @login_required
-@government_required
-def announcement_edit_view(request, pk):
+def announcement_delete_view(request, pk):
+    """Delete announcement (admin only)"""
+    if not (request.user.is_staff or request.user.is_superuser):
+        messages.error(request, 'Access denied. Admin privileges required.')
+        return redirect('government_announcements')
+    
     announcement = get_object_or_404(Announcement, pk=pk)
-    form = AnnouncementForm(instance=announcement)
     if request.method == 'POST':
-        form = AnnouncementForm(request.POST, instance=announcement)
-        if form.is_valid():
-            announcement = form.save(commit=False)
-            if announcement.is_published and not announcement.published_at:
-                announcement.published_at = timezone.now()
-            announcement.save()
-            messages.success(request, 'Announcement updated successfully.')
-            return redirect('government_announcements')
-        messages.error(request, 'Please correct the errors below.')
-    return render(request, 'government/announcement_form.html', {'form': form, 'announcement': announcement})
+        announcement.delete()
+        messages.success(request, 'Announcement deleted successfully.')
+        return redirect('government_announcements')
+    
+    return render(request, 'government/announcement_delete_confirm.html', {'announcement': announcement})

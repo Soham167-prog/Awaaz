@@ -24,7 +24,7 @@ urlpatterns = [
 	path('gov/complaints/<int:pk>/', government_views.complaint_detail_view, name='government_complaint_detail'),
 	path('gov/announcements/', government_views.announcements_view, name='government_announcements'),
 	path('gov/announcements/new/', government_views.announcement_create_view, name='government_announcement_create'),
-	path('gov/announcements/<int:pk>/edit/', government_views.announcement_edit_view, name='government_announcement_edit'),
+	path('gov/announcements/<int:pk>/delete/', government_views.announcement_delete_view, name='government_announcement_delete'),
 	# role-based auth
 	path('login/', views_auth.RoleBasedLoginView.as_view(), name='login'),
 	path('role-redirect/', views_auth.role_redirect_view, name='role_redirect'),

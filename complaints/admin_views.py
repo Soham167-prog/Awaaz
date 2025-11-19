@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.http import JsonResponse
@@ -17,18 +18,12 @@ def admin_login_view(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
         
-        # Check if user exists and is staff/admin
-        try:
-            user = User.objects.get(username=username)
-            if user.check_password(password) and (user.is_staff or user.is_superuser):
-                from django.contrib.auth import login
-                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-                messages.success(request, f'Welcome, {user.username}!')
-                return redirect('admin_dashboard')
-            else:
-                messages.error(request, 'Invalid admin credentials.')
-        except User.DoesNotExist:
-            messages.error(request, 'Invalid admin credentials.')
+        user = authenticate(request, username=username, password=password)
+        if user and (user.is_staff or user.is_superuser):
+            login(request, user)
+            messages.success(request, f'Welcome, {user.username}!')
+            return redirect('admin_dashboard')
+        messages.error(request, 'Invalid admin credentials or insufficient privileges.')
     
     return render(request, 'admin/login.html')
 
@@ -77,6 +72,7 @@ def admin_dashboard_view(request):
     public_complaints = Complaint.objects.filter(public=True).count()
     severe_complaints = Complaint.objects.filter(predicted_severity='severe').count()
     total_users = User.objects.count()
+    recently_resolved = Complaint.objects.filter(is_resolved=True).order_by('-resolved_at')[:5]
     
     context = {
         'complaints': complaints,
@@ -84,6 +80,7 @@ def admin_dashboard_view(request):
         'public_complaints': public_complaints,
         'severe_complaints': severe_complaints,
         'total_users': total_users,
+        'recently_resolved': recently_resolved,
     }
     
     return render(request, 'admin/dashboard.html', context)
@@ -105,7 +102,6 @@ def admin_delete_complaint_view(request, pk):
 @login_required
 def admin_logout_view(request):
     """Admin logout"""
-    from django.contrib.auth import logout
     logout(request)
     messages.success(request, 'You have been logged out.')
     return redirect('admin_login')
