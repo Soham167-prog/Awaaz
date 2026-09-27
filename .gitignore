@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+checkpoints/
+logs/
+.DS_Store
+*.swp
+# Streamlit cache
+.streamlit/
+# Data artifacts
+*.pt
+*.pth
+*.ckpt
