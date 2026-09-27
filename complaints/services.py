@@ -2,27 +2,26 @@
 #import torch.nn.functional as F
 from PIL import Image
 #import torchvision.transforms as transforms
-import random
-from src.models.model import PotholeSeverityModel
-
+#import random
+#from src.models.model import PotholeSeverityModel
 # Global model instance
 #_model = None
 #_device = torch.device('mps' if torch.backends.mps.is_available() else 'cuda' if torch.cuda.is_available() else 'cpu')
 
-def load_model():
-    """Load the trained model"""
-    global _model
-    if _model is None:
-        try:
-            checkpoint = torch.load('checkpoints/best.pt', map_location=_device)
-            _model = PotholeSeverityModel(num_classes=4, pretrained=False)
-            _model.load_state_dict(checkpoint['model_state_dict'])
-            _model.to(_device)
-            _model.eval()
-        except Exception as e:
-            print(f"Error loading model: {e}")
-            _model = None
-    return _model
+# def load_model():
+#     """Load the trained model"""
+#     global _model
+#     if _model is None:
+#         try:
+#             checkpoint = torch.load('checkpoints/best.pt', map_location=_device)
+#             _model = PotholeSeverityModel(num_classes=4, pretrained=False)
+#             _model.load_state_dict(checkpoint['model_state_dict'])
+#             _model.to(_device)
+#             _model.eval()
+#         except Exception as e:
+#             print(f"Error loading model: {e}")
+#             _model = None
+#     return _model
 
 # def predict_and_generate_text(image_path):
 #     """

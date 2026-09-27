@@ -1,7 +1,11 @@
 from typing import Tuple
-import torch
-import torch.nn as nn
-import torchvision.models as models
+try:
+    import torch
+except ImportError:
+    torch = None
+#import torch
+#import torch.nn as nn
+#import torchvision.models as models
 
 
 class PotholeSeverityModel(nn.Module):
