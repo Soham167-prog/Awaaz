@@ -11,3 +11,14 @@ logs/
 *.pt
 *.pth
 *.ckpt
+
+# Training dataset
+dataset/
+train/
+test/
+validation/
+pothole_images/
+*.pt
+*.pth
+*.ckpt
+__pycache__/
