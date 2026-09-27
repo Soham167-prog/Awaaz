@@ -1,0 +1,14 @@
+{
+    "builds": [
+        {
+            "src": "awaaz_web/wsgi.py",
+            "use": "@vercel/python"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "awaaz_web/wsgi.py"
+        }
+    ]
+}
