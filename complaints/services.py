@@ -1,7 +1,7 @@
 #import torch
-import torch.nn.functional as F
+#import torch.nn.functional as F
 from PIL import Image
-import torchvision.transforms as transforms
+#import torchvision.transforms as transforms
 import random
 from src.models.model import PotholeSeverityModel
 
@@ -24,56 +24,70 @@ def load_model():
             _model = None
     return _model
 
+# def predict_and_generate_text(image_path):
+#     """
+#     Predict pothole severity and generate complaint text
+    
+#     Returns:
+#         tuple: (severity, confidence, generated_text)
+#     """
+#     model = load_model()
+#     if model is None:
+#         return 'moderate', 0.5, "Unable to analyze image. Please try again."
+    
+#     try:
+#         # Load and preprocess image
+#         image = Image.open(image_path).convert('RGB')
+#         transform = transforms.Compose([
+#             transforms.Resize((224, 224)),
+#             transforms.ToTensor(),
+#             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+#         ])
+#         image_tensor = transform(image).unsqueeze(0).to(_device)
+        
+#         # Get prediction
+#         with torch.no_grad():
+#             outputs = model(image_tensor)
+#             probabilities = F.softmax(outputs, dim=1)
+#             confidence, predicted = torch.max(probabilities, 1)
+            
+#             confidence = confidence.item()
+#             predicted_class = predicted.item()
+            
+#             # Class mapping: 0=none, 1=minor, 2=moderate, 3=severe
+#             class_names = ['none', 'minor', 'moderate', 'severe']
+#             predicted_label = class_names[predicted_class]
+        
+#         # Apply confidence threshold
+#         confidence_threshold = 0.5
+#         if confidence < confidence_threshold:
+#             predicted_label = 'none'
+        
+#         # Generate text based on prediction
+#         if predicted_label == 'none':
+#             generated_text = generate_none_text()
+#         else:
+#             generated_text = generate_complaint_text(predicted_label, confidence)
+        
+#         return predicted_label, confidence, generated_text
+        
+#     except Exception as e:
+#         print(f"Error processing image {image_path}: {e}")
+#         return 'moderate', 0.5, "Error processing image. Please try again."
+
 def predict_and_generate_text(image_path):
-    """
-    Predict pothole severity and generate complaint text
-    
-    Returns:
-        tuple: (severity, confidence, generated_text)
-    """
-    model = load_model()
-    if model is None:
-        return 'moderate', 0.5, "Unable to analyze image. Please try again."
-    
-    try:
-        # Load and preprocess image
-        image = Image.open(image_path).convert('RGB')
-        transform = transforms.Compose([
-            transforms.Resize((224, 224)),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        ])
-        image_tensor = transform(image).unsqueeze(0).to(_device)
-        
-        # Get prediction
-        with torch.no_grad():
-            outputs = model(image_tensor)
-            probabilities = F.softmax(outputs, dim=1)
-            confidence, predicted = torch.max(probabilities, 1)
-            
-            confidence = confidence.item()
-            predicted_class = predicted.item()
-            
-            # Class mapping: 0=none, 1=minor, 2=moderate, 3=severe
-            class_names = ['none', 'minor', 'moderate', 'severe']
-            predicted_label = class_names[predicted_class]
-        
-        # Apply confidence threshold
-        confidence_threshold = 0.5
-        if confidence < confidence_threshold:
-            predicted_label = 'none'
-        
-        # Generate text based on prediction
-        if predicted_label == 'none':
-            generated_text = generate_none_text()
-        else:
-            generated_text = generate_complaint_text(predicted_label, confidence)
-        
-        return predicted_label, confidence, generated_text
-        
-    except Exception as e:
-        print(f"Error processing image {image_path}: {e}")
-        return 'moderate', 0.5, "Error processing image. Please try again."
+    # Verify the uploaded image opens
+    Image.open(image_path)
+
+    return {
+        "prediction": "Pothole Detected (Demo Mode)",
+        "confidence": 95,
+        "severity": "Medium",
+        "description": (
+            "AI model temporarily disabled for cloud deployment. "
+            "This portfolio deployment demonstrates the full UI and workflow."
+        )
+    }
 
 def generate_none_text():
     """Generate text for images without potholes"""
