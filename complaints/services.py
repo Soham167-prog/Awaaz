@@ -1,4 +1,4 @@
-import torch
+#import torch
 import torch.nn.functional as F
 from PIL import Image
 import torchvision.transforms as transforms
@@ -6,8 +6,8 @@ import random
 from src.models.model import PotholeSeverityModel
 
 # Global model instance
-_model = None
-_device = torch.device('mps' if torch.backends.mps.is_available() else 'cuda' if torch.cuda.is_available() else 'cpu')
+#_model = None
+#_device = torch.device('mps' if torch.backends.mps.is_available() else 'cuda' if torch.cuda.is_available() else 'cpu')
 
 def load_model():
     """Load the trained model"""
