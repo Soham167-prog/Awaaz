@@ -1,172 +1,145 @@
-# 🕳️ Awaaz (आवाज़) — AI-Powered Civic SaaS & Pothole Grievance Platform
+# Awaaz - AI-Powered Civic SaaS & Pothole Grievance Platform
 
-> **Empowering Citizens, Enabling Governance.**  
-> A SaaS-driven civic management platform that connects citizens directly with government authorities and municipal public works departments (PWD) to detect, report, track, and resolve road infrastructure hazards seamlessly.
-
----
-
-## 📌 Executive Summary
-
-**Awaaz** ("Voice of Citizens") is a SaaS-based Civic Tech platform built to revolutionize municipal grievance redressal for road maintenance. Bad roads and unmonitored potholes lead to vehicle damage, traffic congestion, and fatal accidents. 
-
-Awaaz bridges the gap between citizens and civil administration by providing:
-1. **Easy Grievance Reporting for Citizens**: AI-assisted photo upload with automated damage severity assessment and complaint drafting.
-2. **Data-Driven Governance for Municipalities**: Real-time civic feed, crowdsourced validation via community upvotes, and structured severity metrics to prioritize road repairs efficiently.
+Awaaz is a SaaS-driven civic management platform that connects citizens directly with municipal authorities and public works departments to detect, report, track, and resolve road infrastructure issues.
 
 ---
 
-## ✨ Key Features
+## Overview
 
-### 🤖 AI-Powered Pothole Detection & Classification
-- **Automated Computer Vision Engine**: Powered by a custom **ResNet-18** deep learning model trained to classify road damage into four categories: `None`, `Minor`, `Moderate`, and `Severe`.
-- **Confidence Scoring**: Assigns a confidence metric to every analysis and applies adaptive thresholds to eliminate false positives.
-- **Hardware Optimized**: Supports hardware-accelerated inference across Apple Silicon (`MPS`), NVIDIA GPUs (`CUDA`), and standard `CPU` environments.
+Road hazards and unmonitored potholes cause vehicle damage, traffic congestion, and safety risks. Awaaz simplifies grievance redressal by combining computer vision with automated reporting:
 
-### 📝 Automated AI Complaint Generation
-- Eliminates manual documentation friction for citizens by automatically synthesizing clear, formal municipal grievance text tailored to the predicted damage level and severity context.
-
-### 🗳️ Citizen Empowerment & Community Crowdsourcing
-- **Public Grievance Feed**: A centralized portal displaying active road issues with search filters (by severity, title, or keyword) and sorting (newest vs. top upvoted).
-- **Upvotes & Community Priority**: Citizens upvote severe potholes in their area, giving public works officials a prioritized map of urgent repairs.
-- **Discussion & Comments**: Transparent comment threads on each complaint for status updates and community dialogue.
-- **Identity & Aadhaar OTP Schema**: Prepared data schema for verified citizen reporting via OTP-based authentication to prevent spam submissions.
-
-### 🎯 Human-in-the-Loop Model Correction
-- Citizens and field inspectors can submit **True Severity Corrections** (`true_severity`) directly on complaint records, generating ground-truth data for continuous active learning and retraining.
-
-### 🗄️ Hybrid Multi-Database Architecture
-- **Relational Storage**: SQLite / PostgreSQL managed via Django ORM for users, complaints, comments, upvotes, and verification logs.
-- **MongoDB GridFS Integration**: Optional high-scalability MongoDB GridFS backend (`MONGO_URI`) for distributed cloud binary storage of high-resolution road evidence images.
+1. **Citizen Grievance Submission**: Upload road photos to automatically classify damage severity and generate structured municipal complaints.
+2. **Municipal Data & Prioritization**: Public works departments get a real-time civic feed with crowdsourced upvoting, search filters, and severity metrics to prioritize repairs efficiently.
 
 ---
 
-## 🏗️ System Architecture & Workflow
+## Features
+
+- **Pothole Detection & Classification**: Custom ResNet-18 deep learning model classifying road damage into `None`, `Minor`, `Moderate`, and `Severe`. Supports MPS (Apple Silicon), CUDA, and CPU execution.
+- **Automated Complaint Generation**: Synthesizes structured, formal grievance copy based on predicted damage severity and model confidence.
+- **Civic Feed & Upvoting**: Filterable grievance list (by severity, title, or keyword) with community upvoting to surface urgent road repairs.
+- **Discussion & Comments**: Threaded commentary on complaint records for updates between citizens and administrators.
+- **Model Correction System**: Allows users and field inspectors to submit ground-truth corrections (`true_severity`) to fine-tune future model iterations.
+- **Aadhaar OTP Verification Support**: Data schema prepared for verified citizen reporting via OTP authentication.
+- **Dual Storage Architecture**: Relational database (SQLite/PostgreSQL via Django ORM) alongside optional MongoDB GridFS for high-resolution image blob storage.
+
+---
+
+## System Architecture
 
 ```mermaid
 flowchart TD
-    A[📱 Citizen Uploads Road Photo] --> B[🌐 Awaaz Django Platform]
-    B --> C[🧠 PyTorch ResNet-18 Model]
-    C -->|Classifies Damage| D{Severity Level}
-    D -->|Minor / Moderate / Severe| E[📝 AI Generates Complaint Text]
-    D -->|None| F[ℹ️ Smooth Road Verified]
-    E --> G[(Database: SQLite / PostgreSQL)]
-    E --> H[(Cloud Image Storage: Mongo GridFS)]
-    G --> I[📋 Public Grievance Feed]
-    I --> J[👍 Community Upvoting & Validation]
-    J --> K[🏛️ Municipal Admin & PWD Resolution]
-    K --> L[✅ Status Update & Grievance Closed]
+    A[Citizen Uploads Photo] --> B[Awaaz Django Application]
+    B --> C[PyTorch ResNet-18 Model]
+    C --> D{Damage Severity}
+    D -->|Minor / Moderate / Severe| E[Generate Complaint Text]
+    D -->|None| F[Road Condition Verified]
+    E --> G[(Relational DB: SQLite / PostgreSQL)]
+    E --> H[(Image Storage: Mongo GridFS / Media)]
+    G --> I[Public Grievance Feed]
+    I --> J[Community Upvoting & Discussion]
+    J --> K[Municipal PWD Resolution]
 ```
 
 ---
 
-## 🛠️ Technology Stack
+## Tech Stack
 
-| Domain | Technology / Framework |
-| :--- | :--- |
-| **Backend Framework** | Python 3.10+, Django 5.0 |
-| **Machine Learning & CV** | PyTorch, Torchvision, OpenCV, PIL, Scikit-learn, NumPy |
-| **Frontend & UI** | HTML5, Tailwind CSS, Dark Theme Components, Streamlit |
-| **Database & Storage** | SQLite (Default), MongoDB GridFS (Optional Cloud Blobs), Django ORM |
-| **Developer Utilities** | Rich CLI, PyYAML, Git |
+- **Backend Framework**: Python 3.10+, Django 5.0
+- **Machine Learning & Computer Vision**: PyTorch, Torchvision, OpenCV, PIL, Scikit-learn, NumPy, Matplotlib, Seaborn
+- **Frontend**: HTML5, Tailwind CSS, Dark Theme Components, Streamlit
+- **Database & Storage**: SQLite (default), MongoDB GridFS (optional), Django ORM
+- **CLI & Utilities**: Rich, PyYAML
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```text
 Awaaz/
-├── awaaz_web/               # Django Core Project (settings, URLs, WSGI/ASGI)
-├── complaints/              # Django App: Grievance Models, Views, Forms & Services
-│   ├── models.py            # Complaint, Comment, and AadhaarOTP DB Schemas
-│   ├── services.py          # PyTorch Model Loader & AI Complaint Text Synthesizer
-│   ├── views.py             # Feed, Upload, Upvote, Comment, and Correction Views
-│   ├── views_auth.py        # Authentication & User Management
-│   └── urls.py              # Application Routing Configuration
-├── src/                     # Machine Learning Core Pipeline
-│   ├── app/                 # Inference APIs, Evaluation & Streamlit Playground
-│   │   ├── app.py           # Streamlit Interactive Classifier Portal
-│   │   ├── predict.py       # Standalone CLI Predictor Script
-│   │   └── evaluate.py      # Model Metric Evaluation Tool
-│   ├── data/                # Custom PyTorch Dataset & Preprocessing Pipelines
-│   ├── models/              # ResNet-18 Classifier Model Architecture
-│   ├── train/               # PyTorch Training & Fine-Tuning Scripts
-│   └── utils/               # Auto-labeling & Dataset Export Scripts
-├── templates/               # Responsive HTML5 Templates with Tailwind CSS
-│   ├── complaints/          # feed.html, detail.html, upload.html
-│   └── registration/        # login.html, signup.html
-├── static/                  # Custom CSS stylesheets and static assets
-├── scripts/                 # Utility execution scripts
-├── checkpoints/             # Trained PyTorch Model Weight Checkpoints (.pt)
-├── manage.py                # Django CLI Controller
-└── db.sqlite3               # Local Relational Database
+├── awaaz_web/               # Django project configuration (settings, URLs, WSGI/ASGI)
+├── complaints/              # Core Django app for complaints, comments, and auth
+│   ├── models.py            # Complaint, Comment, and AadhaarOTP models
+│   ├── services.py          # PyTorch model loading and complaint generation logic
+│   ├── views.py             # Feed, upload, upvote, comment, and correction views
+│   ├── views_auth.py        # User authentication handlers
+│   └── urls.py              # App routing
+├── src/                     # ML pipeline and model source code
+│   ├── app/                 # Inference scripts, evaluation tools, Streamlit app
+│   ├── data/                # Dataset definitions and preprocessing
+│   ├── models/              # ResNet-18 model architecture
+│   ├── train/               # PyTorch training pipeline
+│   └── utils/               # Auto-labeling and export scripts
+├── templates/               # HTML templates (feed, detail, upload, auth)
+├── static/                  # Static assets and CSS stylesheets
+├── scripts/                 # Utility scripts for CLI prediction
+├── checkpoints/             # Saved PyTorch model weights (.pt)
+├── requirements.txt         # Python dependency list
+├── manage.py                # Django management script
+└── db.sqlite3               # Local SQLite database
 ```
 
 ---
 
-## 🚀 Getting Started
+## Installation & Setup
 
 ### 1. Prerequisites
-- **Python 3.10** or higher
+- Python 3.10 or higher
 - `pip` package manager
-- Recommended: Virtual environment (`venv`)
 
-### 2. Installation & Environment Setup
+### 2. Setup Environment & Dependencies
+
+Clone the repository and install required packages:
 
 ```bash
-# Clone the repository
 git clone https://github.com/Soham167-prog/Awaaz.git
 cd Awaaz
 
-# Create and activate virtual environment
 python3 -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
-# Install dependencies
 pip install --upgrade pip
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
-pip install django streamlit opencv-python pillow numpy scikit-learn rich pyyaml pymongo
+pip install -r requirements.txt
 ```
 
-### 3. Database Migration & Setup
+### 3. Database Setup
+
+Run database migrations to initialize SQLite:
 
 ```bash
-# Apply Django migrations
 python manage.py makemigrations
 python manage.py migrate
-
-# Create a superuser / municipal admin account (Optional)
-python manage.py createsuperuser
+python manage.py createsuperuser  # Optional: create admin account
 ```
 
 ---
 
-## 🖥️ Running the Applications
+## Usage
 
-### 🌐 Option 1: Full-Stack Web Platform (Django)
+### Web Platform (Django)
 
-Run the main civic portal for citizen grievance submissions and municipal monitoring:
+Start the main web portal:
 
 ```bash
 python manage.py runserver
 ```
-Navigate to `http://127.0.0.1:8000/` in your browser.
 
-- **`/`**: Public Grievance Feed with search, filters, and upvotes.
-- **`/new/`**: Submit a new road photo for AI severity classification and complaint generation.
-- **`/login/` & `/signup/`**: Citizen authentication portal.
+Open `http://127.0.0.1:8000/` in your browser:
+- `/` - Public grievance feed with search, severity filter, and upvotes
+- `/new/` - Submit road photos for AI classification and complaint generation
+- `/signup/` & `/login/` - User registration and authentication
 
-### 🎨 Option 2: Interactive ML Sandbox (Streamlit)
+### Streamlit Playground
 
-For quick computer vision experimentation, testing model checkpoints, or inspecting confidence logits:
+For interactive model testing and single-image classification:
 
 ```bash
 streamlit run src/app/app.py
 ```
-Open `http://localhost:8501` to test single image predictions interactively.
 
-### 💻 Option 3: Command-Line Inference
+### CLI Inference
 
-Quickly analyze a road image from the terminal:
+Run prediction on a single image file directly from the terminal:
 
 ```bash
 python scripts/predict.py --image path/to/road_image.jpg
@@ -174,11 +147,11 @@ python scripts/predict.py --image path/to/road_image.jpg
 
 ---
 
-## 🏋️ Machine Learning Model Training
+## Model Training
 
-To retrain or fine-tune the Pothole Severity Classifier model on custom datasets:
+To train or fine-tune the Pothole Severity Classifier on custom data:
 
-1. Organize your image dataset in `data/potholes/`:
+1. Place image data inside `data/potholes/`:
    ```text
    data/potholes/
    ├── train/
@@ -188,35 +161,15 @@ To retrain or fine-tune the Pothole Severity Classifier model on custom datasets
    └── val/
    ```
 
-2. Execute the training script:
+2. Run the training script:
    ```bash
    python src/train/train_new.py --data_dir data/potholes --epochs 20 --batch_size 32
    ```
 
-3. Saved checkpoints will be stored under `checkpoints/best.pt`.
+Trained weights will be saved to `checkpoints/best.pt`.
 
 ---
 
-## 🔮 Strategic Roadmap & SaaS Evolution
+## License
 
-- 🗺️ **GIS & Geo-Location Heatmaps**: Interactive map view visualizing pothole density clusters to assist city planners.
-- 🏢 **Municipal Admin & PWD Contractor Portal**: Role-based access control (RBAC) allowing government officials to assign repair tickets to field contractors with SLA deadline tracking.
-- 📲 **Real-time Push Notifications & WhatsApp Updates**: Automated SMS/WhatsApp updates notifying citizens when their reported grievance changes state from `Submitted` ➔ `In Progress` ➔ `Resolved`.
-- 📊 **Government Analytics Dashboard**: Predictive road maintenance insights and civic repair performance analytics for municipal leaders.
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! If you'd like to improve the AI model, enhance the frontend UI, or expand backend SaaS features:
-1. Fork the Repository.
-2. Create a Feature Branch (`git checkout -b feature/AmazingFeature`).
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`).
-4. Push to the Branch (`git push origin feature/AmazingFeature`).
-5. Open a Pull Request.
-
----
-
-## 📄 License
-
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the MIT License.
