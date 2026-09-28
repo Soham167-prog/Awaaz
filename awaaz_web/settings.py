@@ -81,15 +81,46 @@ TEMPLATES = [
 WSGI_APPLICATION = 'awaaz_web.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
+import shutil
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Dynamic database & media directory for Vercel / read-only serverless environments
+IS_VERCEL = 'VERCEL' in os.environ or os.environ.get('SERVER_SOFTWARE', '').startswith('Vercel')
+
+if IS_VERCEL or not os.access(BASE_DIR, os.W_OK):
+    tmp_dir = Path('/tmp')
+    tmp_db = tmp_dir / 'db.sqlite3'
+    original_db = BASE_DIR / 'db.sqlite3'
+
+    if original_db.exists() and not tmp_db.exists():
+        try:
+            shutil.copy2(original_db, tmp_db)
+        except Exception as e:
+            print(f"Warning copying DB to /tmp: {e}")
+
+    # Copy initial media files to /tmp/media
+    tmp_media = tmp_dir / 'media'
+    original_media = BASE_DIR / 'media'
+    if original_media.exists() and not tmp_media.exists():
+        try:
+            shutil.copytree(original_media, tmp_media)
+        except Exception as e:
+            print(f"Warning copying media to /tmp: {e}")
+
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': tmp_db if tmp_db.exists() else (BASE_DIR / 'db.sqlite3'),
+        }
     }
-}
+    MEDIA_ROOT = tmp_media
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+    MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # Password validation
@@ -120,7 +151,6 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 WHITENOISE_MANIFEST_STRICT = False
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
 
 LOGIN_REDIRECT_URL = 'feed'
 LOGOUT_REDIRECT_URL = 'feed'
