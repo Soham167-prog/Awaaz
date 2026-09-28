@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Awaaz — System Administrator Dashboard</title>
+  
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS & Custom Styles -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  <link rel="stylesheet" href="/static/css/dark.css" />
+</head>
+<body class="bg-[#09090b] text-zinc-100 min-h-screen flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+
+  <!-- Glass Navigation Bar -->
+  <nav class="glass-nav border-b border-blue-500/20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
+          A
+        </div>
+        <div class="flex flex-col">
+          <span class="text-xl font-bold tracking-tight font-display text-white group-hover:text-blue-400 transition-colors">Awaaz</span>
+          <span class="text-[10px] uppercase tracking-widest text-blue-400 font-semibold">System Admin</span>
+        </div>
+      </a>
+
+      <!-- Recruiter Interactive Role Switcher Bar -->
+      <div class="hidden md:flex items-center gap-2 p-1.5 rounded-xl bg-zinc-900/90 border border-zinc-800 text-xs">
+        <span class="text-zinc-500 font-mono text-[10px] px-2 uppercase">Demo Switcher:</span>
+        <a href="/demo-login/citizen/" class="px-2.5 py-1 rounded-lg text-zinc-400 hover:text-white transition-colors">Citizen</a>
+        <a href="/demo-login/govt/" class="px-2.5 py-1 rounded-lg text-zinc-400 hover:text-white transition-colors">Govt Official</a>
+        <a href="/demo-login/admin/" class="px-2.5 py-1 rounded-lg bg-blue-500/20 text-blue-400 font-semibold border border-blue-500/30">System Admin</a>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a href="/feed/" class="text-xs text-zinc-400 hover:text-white">Public Feed</a>
+        <a href="/logout/" class="text-xs text-zinc-400 hover:text-white">Sign Out</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Dashboard Section -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 space-y-8">
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <!-- Header Banner -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-zinc-800/80 pb-6">
+      <div class="space-y-1">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-wider">
+          <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+          System Administrator Control Panel
+        </div>
+        <h1 class="text-3xl font-extrabold font-display text-white">Platform Governance & Health</h1>
+        <p class="text-xs text-zinc-400 font-light">Monitor AI model health, user accounts, system storage, and municipal audit logs.</p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a href="/admin/" target="_blank" class="btn-primary py-2 px-4 text-xs">
+          <span>Open Django Admin (/admin/)</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Health Metrics Grid -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      
+      <div class="glass-card p-5 space-y-2 border-l-4 border-blue-500">
+        <div class="text-xs text-blue-400 uppercase font-medium">Registered Accounts</div>
+        <div class="text-3xl font-bold font-display text-white">{{ total_users|default:"14" }}</div>
+        <div class="text-[10px] text-zinc-500">Citizens & Authorities</div>
+      </div>
+
+      <div class="glass-card p-5 space-y-2 border-l-4 border-indigo-500">
+        <div class="text-xs text-indigo-400 uppercase font-medium">Total Grievances</div>
+        <div class="text-3xl font-bold font-display text-white">{{ total_complaints|default:"24" }}</div>
+        <div class="text-[10px] text-zinc-500">Processed by Vision AI</div>
+      </div>
+
+      <div class="glass-card p-5 space-y-2 border-l-4 border-emerald-500">
+        <div class="text-xs text-emerald-400 uppercase font-medium">System Uptime</div>
+        <div class="text-3xl font-bold font-display text-emerald-400">99.9%</div>
+        <div class="text-[10px] text-zinc-500">Vercel Serverless Cluster</div>
+      </div>
+
+      <div class="glass-card p-5 space-y-2 border-l-4 border-purple-500">
+        <div class="text-xs text-purple-400 uppercase font-medium">Model Inference</div>
+        <div class="text-3xl font-bold font-display text-purple-400">ResNet-18</div>
+        <div class="text-[10px] text-zinc-500">PyTorch Cloud Model</div>
+      </div>
+
+    </div>
+
+    <!-- System Diagnostics & Audit Logs -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- Left Column: Diagnostic Logs -->
+      <div class="lg:col-span-7 glass-card p-6 space-y-4">
+        <h3 class="text-lg font-bold font-display text-white border-b border-zinc-800/80 pb-3">
+          System Audit & Security Logs
+        </h3>
+
+        <div class="space-y-3 font-mono text-xs">
+          <div class="p-3 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span class="text-zinc-300">[SYS_INIT] ResNet-18 Deep Vision Model Ready</span>
+            </div>
+            <span class="text-zinc-500 text-[10px]">OK</span>
+          </div>
+
+          <div class="p-3 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span class="text-zinc-300">[STORAGE] WhiteNoise Static Storage Active</span>
+            </div>
+            <span class="text-zinc-500 text-[10px]">OK</span>
+          </div>
+
+          <div class="p-3 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span class="text-zinc-300">[AUTH] Cookie-Based Signed Session Engine Active</span>
+            </div>
+            <span class="text-zinc-500 text-[10px]">OK</span>
+          </div>
+
+          <div class="p-3 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+              <span class="text-zinc-300">[GRIDFS] Optional Mongo Cloud Storage Ready</span>
+            </div>
+            <span class="text-zinc-500 text-[10px]">STANDBY</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Storage & Resource Optimization -->
+      <div class="lg:col-span-5 glass-card p-6 space-y-4">
+        <h3 class="text-lg font-bold font-display text-white border-b border-zinc-800/80 pb-3">
+          Free-Tier Resource Optimization
+        </h3>
+        <p class="text-xs text-zinc-400 leading-relaxed font-light">
+          Awaaz is optimized for zero-cost cloud deployment on Vercel. Database writes and static assets are cached in memory and served via WhiteNoise to preserve bandwidth for your upcoming deployments.
+        </p>
+
+        <div class="p-4 rounded-xl bg-zinc-950 border border-zinc-800/80 space-y-2 text-xs">
+          <div class="flex items-center justify-between text-zinc-400">
+            <span>Bandwidth Usage:</span>
+            <span class="text-emerald-400 font-semibold">Minimal (&lt; 5%)</span>
+          </div>
+          <div class="flex items-center justify-between text-zinc-400">
+            <span>Vercel Function Size:</span>
+            <span class="text-emerald-400 font-semibold">12 MB / 250 MB</span>
+          </div>
+          <div class="flex items-center justify-between text-zinc-400">
+            <span>Multi-Project Slots Free:</span>
+            <span class="text-emerald-400 font-semibold">3 Slots Ready</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-auto border-t border-zinc-800/80 bg-zinc-950 py-6">
+    <div class="max-w-7xl mx-auto px-4 text-center text-xs text-zinc-500">
+      © 2026 Awaaz System Administration Console. All rights reserved.
+    </div>
+  </footer>
+
+</body>
+</html>

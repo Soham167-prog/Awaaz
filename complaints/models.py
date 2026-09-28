@@ -8,6 +8,12 @@ SEVERITY_CHOICES = [
 	('severe', 'Severe'),
 ]
 
+STATUS_CHOICES = [
+	('pending', 'Pending Review'),
+	('in_progress', 'Repair In Progress'),
+	('resolved', 'Grievance Resolved'),
+]
+
 class Complaint(models.Model):
 	created_at = models.DateTimeField(auto_now_add=True)
 	user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='complaints', null=True, blank=True)
@@ -18,10 +24,11 @@ class Complaint(models.Model):
 	true_severity = models.CharField(max_length=16, choices=SEVERITY_CHOICES, blank=True, default='')
 	confidence = models.FloatField(default=0.0)
 	generated_text = models.TextField(blank=True)
-	# Optional Mongo GridFS object id as string
 	mongo_file_id = models.CharField(max_length=64, blank=True, default='')
 	public = models.BooleanField(default=True)
 	upvotes = models.ManyToManyField(User, related_name='upvoted_complaints', blank=True)
+	status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+	assigned_department = models.CharField(max_length=100, default='Municipal PWD Dept')
 
 	def __str__(self) -> str:
 		return f"{self.pk} - {self.predicted_severity} ({self.confidence:.2f})"
@@ -35,6 +42,8 @@ class Comment(models.Model):
 	user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
 	text = models.TextField()
 	created_at = models.DateTimeField(auto_now_add=True)
+	is_govt_response = models.BooleanField(default=False)
+	is_admin_response = models.BooleanField(default=False)
 
 	def __str__(self) -> str:
 		return f"Comment {self.pk} on {self.complaint_id} by {self.user_id}"

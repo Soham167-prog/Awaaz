@@ -30,12 +30,12 @@
         </div>
       </a>
 
-      <div class="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-300">
-        <a href="/" class="hover:text-white transition-colors">Home</a>
-        <a href="/feed/" class="text-blue-400 font-semibold flex items-center gap-1.5">
-          <span>Public Feed</span>
-          <span class="px-2 py-0.5 text-[10px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full">Live</span>
-        </a>
+      <!-- Recruiter Interactive Role Switcher Bar -->
+      <div class="hidden lg:flex items-center gap-2 p-1.5 rounded-xl bg-zinc-900/90 border border-zinc-800 text-xs">
+        <span class="text-zinc-500 font-mono text-[10px] px-2 uppercase">Demo Switcher:</span>
+        <a href="/demo-login/citizen/" class="px-2.5 py-1 rounded-lg text-zinc-400 hover:text-white transition-colors">Citizen</a>
+        <a href="/demo-login/govt/" class="px-2.5 py-1 rounded-lg text-zinc-400 hover:text-amber-400 transition-colors">Govt Official</a>
+        <a href="/demo-login/admin/" class="px-2.5 py-1 rounded-lg text-zinc-400 hover:text-purple-400 transition-colors">System Admin</a>
       </div>
 
       <div class="flex items-center gap-3">
@@ -44,14 +44,12 @@
             <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
             <span>{{ request.user.username }}</span>
           </div>
-          {% if request.user.is_staff %}
-            <a href="/admin/" target="_blank" class="px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold hover:bg-amber-500/20 transition-colors flex items-center gap-1">
-              <span>Govt Admin</span>
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          {% if request.user.is_staff or request.session.user_role == 'govt' %}
+            <a href="/government/dashboard/" class="px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold hover:bg-amber-500/20 transition-colors flex items-center gap-1">
+              <span>Govt Dashboard</span>
             </a>
           {% endif %}
           <a href="/new/" class="btn-primary text-xs sm:text-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             <span>Report Pothole</span>
           </a>
           <a href="/logout/" class="text-xs text-zinc-400 hover:text-white px-2 py-1 transition-colors">Logout</a>
@@ -130,10 +128,15 @@
             {% endif %}
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
             
-            <div class="absolute top-3 left-3">
+            <div class="absolute top-3 left-3 flex items-center gap-1.5">
               <span class="badge badge-{{ item.predicted_severity|default:'none' }}">
                 {{ item.predicted_severity|default:"Pending"|capfirst }}
               </span>
+              {% if item.status == 'resolved' %}
+                <span class="px-2 py-0.5 rounded-full bg-emerald-500/80 text-white font-bold text-[9px] shadow">RESOLVED</span>
+              {% elif item.status == 'in_progress' %}
+                <span class="px-2 py-0.5 rounded-full bg-blue-500/80 text-white font-bold text-[9px] shadow">IN PROGRESS</span>
+              {% endif %}
             </div>
 
             <div class="absolute bottom-3 right-3 bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-md text-[11px] text-zinc-300 font-medium">

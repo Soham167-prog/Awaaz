@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Awaaz — Government Municipal Authority Dashboard</title>
+  
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS & Custom Styles -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  <link rel="stylesheet" href="/static/css/dark.css" />
+</head>
+<body class="bg-[#09090b] text-zinc-100 min-h-screen flex flex-col font-sans selection:bg-amber-500 selection:text-black">
+
+  <!-- Glass Navigation Bar -->
+  <nav class="glass-nav border-b border-amber-500/20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center text-black font-black text-xl shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform">
+          A
+        </div>
+        <div class="flex flex-col">
+          <span class="text-xl font-bold tracking-tight font-display text-white group-hover:text-amber-400 transition-colors">Awaaz</span>
+          <span class="text-[10px] uppercase tracking-widest text-amber-400 font-semibold">Govt PWD Dashboard</span>
+        </div>
+      </a>
+
+      <!-- Recruiter Interactive Role Switcher Bar -->
+      <div class="hidden md:flex items-center gap-2 p-1.5 rounded-xl bg-zinc-900/90 border border-zinc-800 text-xs">
+        <span class="text-zinc-500 font-mono text-[10px] px-2 uppercase">Demo Switcher:</span>
+        <a href="/demo-login/citizen/" class="px-2.5 py-1 rounded-lg text-zinc-400 hover:text-white transition-colors">Citizen</a>
+        <a href="/demo-login/govt/" class="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-400 font-semibold border border-amber-500/30">Govt Official</a>
+        <a href="/demo-login/admin/" class="px-2.5 py-1 rounded-lg text-zinc-400 hover:text-white transition-colors">System Admin</a>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a href="/feed/" class="text-xs text-zinc-400 hover:text-white">Public Feed</a>
+        <a href="/logout/" class="text-xs text-zinc-400 hover:text-white">Sign Out</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Dashboard Main Section -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 space-y-8">
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm font-medium">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <!-- Header Banner -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-zinc-800/80 pb-6">
+      <div class="space-y-1">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold uppercase tracking-wider">
+          <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+          Municipal Public Works Department (PWD) Portal
+        </div>
+        <h1 class="text-3xl font-extrabold font-display text-white">Government Authority Operations</h1>
+        <p class="text-xs text-zinc-400 font-light">Review AI-flagged road grievances, assign repair teams, and publish official status updates.</p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <span class="text-xs text-zinc-400">Authority Status: <strong class="text-emerald-400">Active PWD Officer</strong></span>
+      </div>
+    </div>
+
+    <!-- Summary Metrics -->
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      
+      <div class="glass-card p-5 space-y-2">
+        <div class="text-xs text-zinc-400 uppercase font-medium">Total Tickets</div>
+        <div class="text-3xl font-bold font-display text-white">{{ total_count }}</div>
+        <div class="text-[10px] text-zinc-500">Logged in municipality</div>
+      </div>
+
+      <div class="glass-card p-5 space-y-2 border-l-4 border-amber-500">
+        <div class="text-xs text-amber-400 uppercase font-medium">Pending Review</div>
+        <div class="text-3xl font-bold font-display text-amber-400">{{ pending_count }}</div>
+        <div class="text-[10px] text-zinc-500">Awaiting inspection</div>
+      </div>
+
+      <div class="glass-card p-5 space-y-2 border-l-4 border-blue-500">
+        <div class="text-xs text-blue-400 uppercase font-medium">In Progress</div>
+        <div class="text-3xl font-bold font-display text-blue-400">{{ in_progress_count }}</div>
+        <div class="text-[10px] text-zinc-500">Contractor assigned</div>
+      </div>
+
+      <div class="glass-card p-5 space-y-2 border-l-4 border-emerald-500">
+        <div class="text-xs text-emerald-400 uppercase font-medium">Resolved</div>
+        <div class="text-3xl font-bold font-display text-emerald-400">{{ resolved_count }}</div>
+        <div class="text-[10px] text-zinc-500">Road repaved</div>
+      </div>
+
+      <div class="glass-card p-5 space-y-2 border-l-4 border-red-500">
+        <div class="text-xs text-red-400 uppercase font-medium">Severe Hazards</div>
+        <div class="text-3xl font-bold font-display text-red-400">{{ severe_count }}</div>
+        <div class="text-[10px] text-zinc-500">High priority dispatch</div>
+      </div>
+
+    </div>
+
+    <!-- Active Tickets Queue Table -->
+    <div class="glass-card p-6 space-y-6">
+      <div class="flex items-center justify-between border-b border-zinc-800/80 pb-4">
+        <h3 class="text-lg font-bold font-display text-white">Grievance Dispatch Queue</h3>
+        <span class="text-xs text-zinc-400 font-mono">Real-time PWD Monitoring</span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-zinc-300">
+          <thead class="bg-zinc-950 text-zinc-400 font-semibold uppercase tracking-wider border-b border-zinc-800">
+            <tr>
+              <th class="p-3">ID</th>
+              <th class="p-3">Evidence</th>
+              <th class="p-3">Title & Summary</th>
+              <th class="p-3">AI Severity</th>
+              <th class="p-3">Current Status</th>
+              <th class="p-3">Municipal Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-zinc-800/60 font-sans">
+            {% for item in complaints %}
+              <tr class="hover:bg-zinc-900/50 transition-colors">
+                <td class="p-3 font-mono font-bold text-zinc-400">#{{ item.pk }}</td>
+                <td class="p-3">
+                  {% if item.image %}
+                    <img src="{{ item.image.url }}" alt="Pothole" class="w-14 h-10 object-cover rounded-lg border border-zinc-800" />
+                  {% else %}
+                    <span class="text-[10px] text-zinc-600">No Img</span>
+                  {% endif %}
+                </td>
+                <td class="p-3 max-w-xs">
+                  <a href="/complaint/{{ item.pk }}/" class="font-semibold text-white hover:text-amber-400 transition-colors line-clamp-1">
+                    {{ item.title|default:"Road Pothole Report" }}
+                  </a>
+                  <p class="text-[11px] text-zinc-500 line-clamp-1 mt-0.5">{{ item.generated_text }}</p>
+                </td>
+                <td class="p-3">
+                  <span class="badge badge-{{ item.predicted_severity|default:'none' }}">
+                    {{ item.predicted_severity|capfirst }}
+                  </span>
+                </td>
+                <td class="p-3">
+                  {% if item.status == 'resolved' %}
+                    <span class="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-semibold">Resolved</span>
+                  {% elif item.status == 'in_progress' %}
+                    <span class="px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[10px] font-semibold">In Progress</span>
+                  {% else %}
+                    <span class="px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[10px] font-semibold">Pending Review</span>
+                  {% endif %}
+                </td>
+                <td class="p-3">
+                  <form method="post" action="/complaint/{{ item.pk }}/status/" class="flex items-center gap-2">
+                    {% csrf_token %}
+                    <select name="status" class="bg-zinc-950 border border-zinc-800 text-[11px] text-zinc-200 rounded-lg p-1.5 focus:outline-none">
+                      <option value="pending" {% if item.status == 'pending' %}selected{% endif %}>Pending</option>
+                      <option value="in_progress" {% if item.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                      <option value="resolved" {% if item.status == 'resolved' %}selected{% endif %}>Resolved</option>
+                    </select>
+                    <button type="submit" class="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-semibold hover:bg-amber-500/30 transition-colors">Update</button>
+                  </form>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="6" class="p-6 text-center text-zinc-500">No grievances logged in queue.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Recruiter Notice Banner -->
+    <div class="p-6 rounded-2xl bg-zinc-900/80 border border-zinc-800 space-y-2 text-xs text-zinc-400">
+      <div class="flex items-center gap-2 text-amber-400 font-semibold uppercase tracking-wider text-[11px]">
+        <span>⚡ Recruiter & Reviewer Note</span>
+      </div>
+      <p class="leading-relaxed">
+        This dashboard demonstrates the full municipal public works workflow (ticket queue, contractor dispatch status, and government verified responses). On the free cloud deployment tier, database operations run with stateless session storage for zero runtime server cost.
+      </p>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-auto border-t border-zinc-800/80 bg-zinc-950 py-6">
+    <div class="max-w-7xl mx-auto px-4 text-center text-xs text-zinc-500">
+      © 2026 Awaaz Municipal SaaS Platform. Public Works Department Portal.
+    </div>
+  </footer>
+
+</body>
+</html>

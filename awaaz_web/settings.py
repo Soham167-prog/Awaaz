@@ -156,6 +156,11 @@ LOGIN_REDIRECT_URL = 'feed'
 LOGOUT_REDIRECT_URL = 'feed'
 LOGIN_URL = 'login'
 
+# Cookie-based session engine for serverless/Vercel compatibility
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_AGE = 86400 * 7
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 

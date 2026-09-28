@@ -30,9 +30,17 @@
         </div>
       </a>
 
+      <!-- Recruiter Interactive Role Switcher Bar -->
+      <div class="hidden md:flex items-center gap-2 p-1.5 rounded-xl bg-zinc-900/90 border border-zinc-800 text-xs">
+        <span class="text-zinc-500 font-mono text-[10px] px-2 uppercase">Role:</span>
+        <a href="/demo-login/citizen/" class="px-2 py-0.5 rounded text-zinc-400 hover:text-white transition-colors">Citizen</a>
+        <a href="/demo-login/govt/" class="px-2 py-0.5 rounded text-zinc-400 hover:text-amber-400 transition-colors">Govt Official</a>
+        <a href="/demo-login/admin/" class="px-2 py-0.5 rounded text-zinc-400 hover:text-purple-400 transition-colors">Admin</a>
+      </div>
+
       <div class="flex items-center gap-4 text-sm font-medium">
         <a href="/feed/" class="text-zinc-400 hover:text-white transition-colors flex items-center gap-1">
-          <span>← Back to Public Feed</span>
+          <span>← Back to Feed</span>
         </a>
         <a href="/new/" class="btn-primary text-xs sm:text-sm">Report Pothole</a>
       </div>
@@ -61,10 +69,17 @@
           {% else %}
             <div class="w-full h-64 flex items-center justify-center text-zinc-600 font-mono text-sm">No Image Available</div>
           {% endif %}
-          <div class="absolute top-3 left-3">
+          <div class="absolute top-3 left-3 flex items-center gap-2">
             <span class="badge badge-{{ obj.predicted_severity|default:'none' }}">
               {{ obj.predicted_severity|capfirst }} Severity
             </span>
+            {% if obj.status == 'resolved' %}
+              <span class="px-2.5 py-1 rounded-full bg-emerald-500/80 text-white font-bold text-[10px] shadow-lg">RESOLVED</span>
+            {% elif obj.status == 'in_progress' %}
+              <span class="px-2.5 py-1 rounded-full bg-blue-500/80 text-white font-bold text-[10px] shadow-lg">IN PROGRESS</span>
+            {% else %}
+              <span class="px-2.5 py-1 rounded-full bg-amber-500/80 text-black font-bold text-[10px] shadow-lg">PENDING REVIEW</span>
+            {% endif %}
           </div>
         </div>
         <div class="flex items-center justify-between text-xs text-zinc-500 px-1">
@@ -103,6 +118,25 @@
           </div>
         </div>
 
+        <!-- Municipal Authority Status Update Form -->
+        {% if request.user.is_staff or request.session.user_role == 'govt' or request.user.is_superuser %}
+          <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">🏛️ Govt Official Status Controls</span>
+              <span class="text-[10px] text-amber-300/80 font-mono">Municipal Action</span>
+            </div>
+            <form method="post" action="/complaint/{{ obj.pk }}/status/" class="flex items-center gap-3">
+              {% csrf_token %}
+              <select name="status" class="bg-zinc-950 border border-amber-500/30 text-xs text-zinc-200 rounded-xl p-2.5 focus:outline-none flex-1">
+                <option value="pending" {% if obj.status == 'pending' %}selected{% endif %}>Pending Review</option>
+                <option value="in_progress" {% if obj.status == 'in_progress' %}selected{% endif %}>Repair In Progress</option>
+                <option value="resolved" {% if obj.status == 'resolved' %}selected{% endif %}>Grievance Resolved</option>
+              </select>
+              <button type="submit" class="btn-primary py-2 px-4 text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-black">Update Ticket</button>
+            </form>
+          </div>
+        {% endif %}
+
         <!-- Upvote & Action Row -->
         <div class="pt-4 border-t border-zinc-800/80 flex items-center justify-between">
           <div class="flex items-center gap-3">
@@ -122,38 +156,47 @@
               <a href="/login/" class="btn-secondary py-2 px-3 text-xs">Sign in to upvote</a>
             {% endif %}
           </div>
-
-          {% if obj.mongo_file_id %}
-            <span class="text-[10px] text-zinc-500 font-mono" title="Stored in Mongo GridFS">GridFS ID: {{ obj.mongo_file_id|slice:":8" }}...</span>
-          {% endif %}
         </div>
 
       </div>
 
     </div>
 
-    <!-- Bottom Section: Comments & Severity Correction -->
+    <!-- Bottom Section: Comments & Role Badges -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
       
-      <!-- Community Comments Column -->
+      <!-- Community & Govt Responses Column -->
       <div class="lg:col-span-7 glass-card p-6 space-y-6">
         <h3 class="text-lg font-bold font-display text-white border-b border-zinc-800/80 pb-3 flex items-center justify-between">
-          <span>Community Discussions</span>
+          <span>Discussions & Official Responses</span>
           <span class="text-xs text-zinc-500 font-normal">{{ obj.comments.count }} comments</span>
         </h3>
 
         <div class="space-y-4">
           {% for c in obj.comments.all %}
-            <div class="p-4 rounded-xl bg-zinc-950/60 border border-zinc-800/80 space-y-1.5">
+            <div class="p-4 rounded-xl {% if c.is_govt_response or 'govt' in c.user.username|lower %}bg-amber-950/20 border-amber-500/30{% elif c.is_admin_response or c.user.is_superuser %}bg-blue-950/20 border-blue-500/30{% else %}bg-zinc-950/60 border-zinc-800/80{% endif %} border space-y-2">
               <div class="flex items-center justify-between text-xs">
-                <span class="font-semibold text-blue-400">{{ c.user.username }}</span>
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-white">{{ c.user.username }}</span>
+                  {% if c.is_govt_response or 'govt' in c.user.username|lower or c.user.is_staff %}
+                    <span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[10px] font-bold uppercase tracking-wider">
+                      🏛️ Government Official
+                    </span>
+                  {% elif c.is_admin_response or c.user.is_superuser %}
+                    <span class="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/40 text-[10px] font-bold uppercase tracking-wider">
+                      ⚙️ System Admin
+                    </span>
+                  {% else %}
+                    <span class="px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 text-[10px]">Citizen</span>
+                  {% endif %}
+                </div>
                 <span class="text-zinc-500">{{ c.created_at|date:"M d, Y · H:i" }}</span>
               </div>
-              <p class="text-xs text-zinc-300 leading-relaxed">{{ c.text }}</p>
+              <p class="text-xs text-zinc-200 leading-relaxed font-sans">{{ c.text }}</p>
             </div>
           {% empty %}
             <div class="p-6 text-center text-xs text-zinc-500 font-light">
-              No comments yet. Be the first to leave a comment on this report.
+              No comments yet. Post an update or citizen response below.
             </div>
           {% endfor %}
         </div>
@@ -161,8 +204,16 @@
         {% if request.user.is_authenticated %}
           <form method="post" action="/complaint/{{ obj.pk }}/comment/" class="pt-4 border-t border-zinc-800/80 space-y-3">
             {% csrf_token %}
-            <textarea name="text" rows="3" placeholder="Add a comment or update..." required class="w-full rounded-xl bg-zinc-950 border border-zinc-800 text-xs sm:text-sm text-zinc-200 p-3 placeholder-zinc-500 focus:border-blue-500 focus:outline-none transition-colors"></textarea>
-            <button type="submit" class="btn-primary text-xs py-2 px-4">Post Comment</button>
+            <div class="flex items-center justify-between text-xs text-zinc-400">
+              <span>Posting as <strong class="text-white">{{ request.user.username }}</strong></span>
+              {% if request.user.is_staff or request.session.user_role == 'govt' %}
+                <span class="text-amber-400 font-semibold">Will publish as [Government Official]</span>
+              {% elif request.user.is_superuser or request.session.user_role == 'admin' %}
+                <span class="text-blue-400 font-semibold">Will publish as [System Admin]</span>
+              {% endif %}
+            </div>
+            <textarea name="text" rows="3" placeholder="Write a response or update..." required class="w-full rounded-xl bg-zinc-950 border border-zinc-800 text-xs sm:text-sm text-zinc-200 p-3 placeholder-zinc-500 focus:border-blue-500 focus:outline-none transition-colors"></textarea>
+            <button type="submit" class="btn-primary text-xs py-2 px-4">Publish Comment</button>
           </form>
         {% else %}
           <div class="pt-4 border-t border-zinc-800/80 text-center text-xs text-zinc-400">
@@ -174,7 +225,7 @@
       <!-- Human-in-the-loop Correction Column -->
       <div class="lg:col-span-5 glass-card p-6 space-y-4">
         <h3 class="text-lg font-bold font-display text-white border-b border-zinc-800/80 pb-3">
-          Refine Model Accuracy
+          Ground-Truth Severity Correction
         </h3>
         <p class="text-xs text-zinc-400 leading-relaxed font-light">
           Is the AI-predicted severity incorrect? Submit your ground-truth correction below to help fine-tune future model checkpoints.

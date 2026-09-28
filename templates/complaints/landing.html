@@ -32,7 +32,7 @@
 
       <div class="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-300">
         <a href="#features" class="hover:text-white transition-colors">Features</a>
-        <a href="#how-it-works" class="hover:text-white transition-colors">How It Works</a>
+        <a href="#ecosystem" class="hover:text-white transition-colors">Role Architecture</a>
         <a href="/feed/" class="hover:text-blue-400 transition-colors flex items-center gap-1.5">
           <span>Public Feed</span>
           <span class="px-2 py-0.5 text-[10px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full">Live</span>
@@ -45,26 +45,43 @@
             <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
             <span>{{ request.user.username }}</span>
           </div>
-          {% if request.user.is_staff %}
-            <a href="/admin/" target="_blank" class="px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold hover:bg-amber-500/20 transition-colors flex items-center gap-1">
-              <span>Govt Admin</span>
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          {% if request.user.is_staff or request.session.user_role == 'govt' %}
+            <a href="/government/dashboard/" class="px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold hover:bg-amber-500/20 transition-colors flex items-center gap-1">
+              <span>Govt Dashboard</span>
             </a>
           {% endif %}
           <a href="/new/" class="btn-primary text-xs sm:text-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             <span>Report Pothole</span>
           </a>
           <a href="/logout/" class="text-xs text-zinc-400 hover:text-white px-2 py-1 transition-colors">Logout</a>
         {% else %}
           <a href="/login/" class="btn-secondary text-xs sm:text-sm">Sign In</a>
-          <a href="/new/" class="btn-primary text-xs sm:text-sm">
-            <span>Report Pothole</span>
-          </a>
+          <a href="/new/" class="btn-primary text-xs sm:text-sm">Report Pothole</a>
         {% endif %}
       </div>
     </div>
   </nav>
+
+  <!-- Recruiter Walkthrough Banner -->
+  <div class="bg-gradient-to-r from-blue-950/80 via-zinc-900 to-amber-950/80 border-b border-zinc-800 py-3">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
+      <div class="flex items-center gap-2 text-zinc-300">
+        <span class="px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 font-bold font-mono uppercase text-[10px]">Recruiter Quick Access</span>
+        <span class="font-medium">1-Click Role Switcher to explore dashboards & permissions:</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="/demo-login/citizen/" class="px-3 py-1 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 font-semibold transition-colors">
+          👤 Citizen Demo
+        </a>
+        <a href="/demo-login/govt/" class="px-3 py-1 rounded-lg bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 font-semibold transition-colors">
+          🏛️ Govt Official Demo
+        </a>
+        <a href="/demo-login/admin/" class="px-3 py-1 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 font-semibold transition-colors">
+          ⚙️ System Admin Demo
+        </a>
+      </div>
+    </div>
+  </div>
 
   <!-- Hero Section -->
   <section class="relative pt-16 pb-24 overflow-hidden">
@@ -108,8 +125,8 @@
               <div class="text-xs text-zinc-500 uppercase tracking-wider font-medium mt-1">Reports Logged</div>
             </div>
             <div>
-              <div class="text-2xl sm:text-3xl font-extrabold text-white font-display">4 Levels</div>
-              <div class="text-xs text-zinc-500 uppercase tracking-wider font-medium mt-1">Severity Grading</div>
+              <div class="text-2xl sm:text-3xl font-extrabold text-white font-display">3 Roles</div>
+              <div class="text-xs text-zinc-500 uppercase tracking-wider font-medium mt-1">Role Ecosystem</div>
             </div>
           </div>
         </div>
@@ -159,8 +176,59 @@
     </div>
   </section>
 
+  <!-- Three-Role Ecosystem Section (For Reviewers & Recruiters) -->
+  <section id="ecosystem" class="py-20 border-t border-zinc-800/60 bg-zinc-950/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+      
+      <div class="text-center max-w-3xl mx-auto space-y-4">
+        <h2 class="text-3xl sm:text-4xl font-bold font-display text-white">Three-Role Platform Ecosystem</h2>
+        <p class="text-zinc-400 font-light">Engineered with role-based access control (RBAC) connecting citizens, municipal authorities, and system administrators.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        <!-- Citizen Role -->
+        <div class="glass-card p-8 space-y-5 border-t-4 border-blue-500 relative">
+          <div class="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-xl">
+            👤
+          </div>
+          <h3 class="text-xl font-bold font-display text-white">1. Citizen User</h3>
+          <p class="text-sm text-zinc-400 leading-relaxed">
+            Citizens capture road damage photos, receive instant AI severity scores, submit public grievances, upvote community reports, and track repair status in real-time.
+          </p>
+          <a href="/demo-login/citizen/" class="btn-secondary text-xs py-2 w-full justify-center">Try Citizen Demo →</a>
+        </div>
+
+        <!-- Government Role -->
+        <div class="glass-card p-8 space-y-5 border-t-4 border-amber-500 relative">
+          <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-xl">
+            🏛️
+          </div>
+          <h3 class="text-xl font-bold font-display text-white">2. Government Official</h3>
+          <p class="text-sm text-zinc-400 leading-relaxed">
+            Municipal Public Works Department (PWD) officials manage the municipal ticket queue, update ticket states (<strong class="text-amber-400">Pending</strong> ➔ <strong class="text-blue-400">In Progress</strong> ➔ <strong class="text-emerald-400">Resolved</strong>), and leave official verified responses tagged with <span class="text-amber-400 font-bold">[Govt Official]</span>.
+          </p>
+          <a href="/demo-login/govt/" class="btn-secondary text-xs py-2 w-full justify-center border-amber-500/30 text-amber-300">Try Govt Dashboard →</a>
+        </div>
+
+        <!-- System Admin Role -->
+        <div class="glass-card p-8 space-y-5 border-t-4 border-purple-500 relative">
+          <div class="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-xl">
+            ⚙️
+          </div>
+          <h3 class="text-xl font-bold font-display text-white">3. System Administrator</h3>
+          <p class="text-sm text-zinc-400 leading-relaxed">
+            System admins monitor deep learning vision model health, telemetry, user account permissions, database performance, and platform security tagged with <span class="text-blue-400 font-bold">[System Admin]</span>.
+          </p>
+          <a href="/demo-login/admin/" class="btn-secondary text-xs py-2 w-full justify-center border-purple-500/30 text-purple-300">Try Admin Dashboard →</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
   <!-- Features Grid -->
-  <section id="features" class="py-20 border-t border-zinc-800/60 bg-zinc-950/50">
+  <section id="features" class="py-20 border-t border-zinc-800/60">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
       
       <div class="text-center max-w-3xl mx-auto space-y-4">
@@ -204,50 +272,11 @@
     </div>
   </section>
 
-  <!-- How It Works -->
-  <section id="how-it-works" class="py-20 border-t border-zinc-800/60">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
-      
-      <div class="text-center max-w-2xl mx-auto space-y-4">
-        <h2 class="text-3xl sm:text-4xl font-bold font-display text-white">How Awaaz Works</h2>
-        <p class="text-zinc-400 font-light">From citizen report to municipal repair in four seamless steps.</p>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        
-        <div class="glass-card p-6 space-y-3 relative">
-          <div class="text-xs font-bold font-mono text-blue-400">STEP 01</div>
-          <h4 class="text-lg font-bold text-white font-display">Snap & Upload</h4>
-          <p class="text-xs text-zinc-400 leading-relaxed">Capture a clear photograph of the damaged road section and submit it on Awaaz.</p>
-        </div>
-
-        <div class="glass-card p-6 space-y-3 relative">
-          <div class="text-xs font-bold font-mono text-blue-400">STEP 02</div>
-          <h4 class="text-lg font-bold text-white font-display">AI Analysis</h4>
-          <p class="text-xs text-zinc-400 leading-relaxed">Deep vision model processes image features, assigns severity score, and generates complaint text.</p>
-        </div>
-
-        <div class="glass-card p-6 space-y-3 relative">
-          <div class="text-xs font-bold font-mono text-blue-400">STEP 03</div>
-          <h4 class="text-lg font-bold text-white font-display">Community Upvote</h4>
-          <p class="text-xs text-zinc-400 leading-relaxed">Published to public civic feed where community members upvote and validate the report.</p>
-        </div>
-
-        <div class="glass-card p-6 space-y-3 relative">
-          <div class="text-xs font-bold font-mono text-blue-400">STEP 04</div>
-          <h4 class="text-lg font-bold text-white font-display">Municipal Action</h4>
-          <p class="text-xs text-zinc-400 leading-relaxed">Public Works Department receives prioritized tickets and executes targeted road repairs.</p>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
   <!-- CTA Banner -->
   <section class="py-16 border-t border-zinc-800/80 bg-gradient-to-b from-zinc-950 to-blue-950/30">
     <div class="max-w-5xl mx-auto px-4 text-center space-y-6">
-      <h2 class="text-3xl sm:text-4xl font-extrabold font-display text-white">Ready to make your roads safer?</h2>
-      <p class="text-zinc-400 max-w-xl mx-auto">Join citizens actively improving urban infrastructure. Submit a report in less than 30 seconds.</p>
+      <h2 class="text-3xl sm:text-4xl font-extrabold font-display text-white">Ready to test the Awaaz platform?</h2>
+      <p class="text-zinc-400 max-w-xl mx-auto">Explore all 3 roles, test the vision AI model, or view public grievances in real time.</p>
       <div class="pt-2 flex justify-center gap-4">
         <a href="/new/" class="btn-primary py-3 px-8 text-base">Report a Pothole</a>
         <a href="/feed/" class="btn-secondary py-3 px-8 text-base">Browse Reports</a>
@@ -262,7 +291,8 @@
       <div class="flex items-center gap-6">
         <a href="/feed/" class="hover:text-zinc-300">Public Feed</a>
         <a href="/new/" class="hover:text-zinc-300">Report Hazard</a>
-        <a href="/login/" class="hover:text-zinc-300">Admin Sign In</a>
+        <a href="/government/dashboard/" class="hover:text-zinc-300">Govt Dashboard</a>
+        <a href="/admin-dashboard/" class="hover:text-zinc-300">Admin Dashboard</a>
       </div>
     </div>
   </footer>
