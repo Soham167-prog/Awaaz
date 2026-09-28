@@ -1,4 +1,5 @@
 {
+    "version": 2,
     "builds": [
         {
             "src": "awaaz_web/wsgi.py",
