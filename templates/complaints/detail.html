@@ -1,88 +1,215 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Awaaz | Result</title>
-	<link rel="stylesheet" href="/static/css/dark.css" />
-	<script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Awaaz — Complaint Details #{{ obj.pk }}</title>
+  
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS & Custom Styles -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  <link rel="stylesheet" href="/static/css/dark.css" />
 </head>
-<body class="bg-[#0b0b0d] text-[#e6e6e6]">
-	<div class="container max-w-5xl mx-auto px-4">
-		<header class="flex items-center justify-between py-6">
-			<h1 class="text-2xl font-semibold">🕳️ Result</h1>
-			<div class="space-x-3 text-sm">
-				<a class="text-blue-400 hover:text-blue-300" href="/">Feed</a>
-				<span class="text-zinc-400">|</span>
-				<a class="text-blue-400 hover:text-blue-300" href="/new/">New</a>
-			</div>
-		</header>
-		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-			<div class="card p-4">
-				<img class="rounded-md" src="{{ obj.image.url }}" alt="uploaded" />
-			</div>
-			<div class="card p-4 space-y-3">
-				<p class="text-sm">
-					<span class="badge {{ obj.predicted_severity }}">Predicted: {{ obj.predicted_severity|capfirst }}</span>
-					<span class="text-zinc-400">Confidence: {{ obj.confidence|floatformat:2 }}</span>
-				</p>
-				{% if obj.true_severity %}
-					<p class="text-xs text-zinc-400">Corrected: <span class="badge {{ obj.true_severity }}">{{ obj.true_severity|capfirst }}</span></p>
-				{% endif %}
-				<pre class="whitespace-pre-wrap text-sm leading-relaxed">{{ obj.generated_text }}</pre>
-				<div class="flex items-center gap-3">
-					<span class="text-zinc-400 text-sm">Upvotes: {{ obj.upvote_count }}</span>
-					{% if request.user.is_authenticated %}
-						<form method="post" action="/complaint/{{ obj.pk }}/upvote/">
-							{% csrf_token %}
-							<button type="submit" class="rounded-md bg-blue-600 hover:bg-blue-500 px-3 py-1">{% if request.user in obj.upvotes.all %}Remove Upvote{% else %}Upvote{% endif %}</button>
-						</form>
-					{% else %}
-						<small><a class="text-blue-400 hover:text-blue-300" href="/login/">Login to upvote</a></small>
-					{% endif %}
-				</div>
-				{% if obj.mongo_file_id %}
-					<p class="text-zinc-500 text-xs">Stored in Mongo GridFS (id: {{ obj.mongo_file_id }})</p>
-				{% endif %}
-			</div>
-		</div>
-		<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-			<div class="card p-4">
-				<h3 class="font-semibold mb-3">Comments</h3>
-				<div class="space-y-3">
-					{% for c in obj.comments.all %}
-						<div>
-							<p class="text-sm"><strong>{{ c.user.username }}</strong> · <span class="text-zinc-500">{{ c.created_at }}</span></p>
-							<p class="text-sm text-zinc-200">{{ c.text }}</p>
-							<hr class="border-[#20202a] mt-3" />
-						</div>
-					{% empty %}
-						<p class="text-sm text-zinc-400">No comments yet.</p>
-					{% endfor %}
-				</div>
-				{% if request.user.is_authenticated %}
-					<form method="post" action="/complaint/{{ obj.pk }}/comment/" class="mt-3">
-						{% csrf_token %}
-						{{ comment_form.text }}
-						<button type="submit" class="mt-2 rounded-md bg-blue-600 hover:bg-blue-500 px-3 py-1">Comment</button>
-					</form>
-				{% else %}
-					<small><a class="text-blue-400 hover:text-blue-300" href="/login/">Login to comment</a></small>
-				{% endif %}
-			</div>
-			<div class="card p-4">
-				<h3 class="font-semibold mb-3">Is severity wrong?</h3>
-				{% if request.user.is_authenticated %}
-					<form method="post" action="/complaint/{{ obj.pk }}/correct/" class="flex items-center gap-3">
-						{% csrf_token %}
-						{{ corr_form.true_severity }}
-						<button type="submit" class="rounded-md bg-blue-600 hover:bg-blue-500 px-3 py-1">Submit correction</button>
-					</form>
-				{% else %}
-					<small><a class="text-blue-400 hover:text-blue-300" href="/login/">Login to suggest a correction</a></small>
-				{% endif %}
-			</div>
-		</div>
-	</div>
+<body class="bg-[#09090b] text-zinc-100 min-h-screen flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+
+  <!-- Glass Navigation Bar -->
+  <nav class="glass-nav">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
+          A
+        </div>
+        <div class="flex flex-col">
+          <span class="text-xl font-bold tracking-tight font-display text-white group-hover:text-blue-400 transition-colors">Awaaz</span>
+          <span class="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">Grievance Detail</span>
+        </div>
+      </a>
+
+      <div class="flex items-center gap-4 text-sm font-medium">
+        <a href="/feed/" class="text-zinc-400 hover:text-white transition-colors flex items-center gap-1">
+          <span>← Back to Public Feed</span>
+        </a>
+        <a href="/new/" class="btn-primary text-xs sm:text-sm">Report Pothole</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Detail Page Container -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 space-y-8">
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-medium">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+    
+    <!-- Top Grid: Image Evidence vs AI Diagnosis -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- Evidence Image Card -->
+      <div class="lg:col-span-6 glass-card p-4 space-y-3">
+        <div class="relative rounded-xl overflow-hidden bg-zinc-950 border border-zinc-800">
+          {% if obj.image %}
+            <img src="{{ obj.image.url }}" alt="Evidence photo" class="w-full h-auto max-h-[480px] object-cover rounded-lg" />
+          {% else %}
+            <div class="w-full h-64 flex items-center justify-center text-zinc-600 font-mono text-sm">No Image Available</div>
+          {% endif %}
+          <div class="absolute top-3 left-3">
+            <span class="badge badge-{{ obj.predicted_severity|default:'none' }}">
+              {{ obj.predicted_severity|capfirst }} Severity
+            </span>
+          </div>
+        </div>
+        <div class="flex items-center justify-between text-xs text-zinc-500 px-1">
+          <span>Reported by: <strong class="text-zinc-300">{{ obj.user.username|default:"Anonymous" }}</strong></span>
+          <time datetime="{{ obj.created_at|date:'c' }}">{{ obj.created_at|date:"F d, Y · H:i" }}</time>
+        </div>
+      </div>
+
+      <!-- AI Diagnosis & Action Panel -->
+      <div class="lg:col-span-6 glass-card p-6 space-y-6">
+        
+        <div class="space-y-2 border-b border-zinc-800/80 pb-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs uppercase font-mono tracking-wider text-blue-400 font-semibold">Diagnostic Result</span>
+            <span class="text-xs text-zinc-400 bg-zinc-900 px-2.5 py-1 rounded-md border border-zinc-800">
+              Confidence: {{ obj.confidence|floatformat:2 }}
+            </span>
+          </div>
+          <h1 class="text-2xl font-bold font-display text-white">
+            {{ obj.title|default:"Road Pothole Inspection Report" }}
+          </h1>
+        </div>
+
+        {% if obj.true_severity %}
+          <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300 flex items-center justify-between">
+            <span>Community Corrected Severity:</span>
+            <span class="badge badge-{{ obj.true_severity }}">{{ obj.true_severity|capfirst }}</span>
+          </div>
+        {% endif %}
+
+        <!-- Generated Complaint Text -->
+        <div class="space-y-2">
+          <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">Synthesized Municipal Copy</label>
+          <div class="p-4 rounded-xl bg-zinc-950 border border-zinc-800/80 text-xs sm:text-sm text-zinc-200 leading-relaxed font-mono whitespace-pre-wrap">
+            {{ obj.generated_text }}
+          </div>
+        </div>
+
+        <!-- Upvote & Action Row -->
+        <div class="pt-4 border-t border-zinc-800/80 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="text-sm font-semibold text-zinc-300">{{ obj.upvote_count }} Upvotes</span>
+            {% if request.user.is_authenticated %}
+              <form method="post" action="/complaint/{{ obj.pk }}/upvote/">
+                {% csrf_token %}
+                <button type="submit" class="btn-primary py-2 px-4 text-xs">
+                  {% if request.user in obj.upvotes.all %}
+                    ✓ Upvoted
+                  {% else %}
+                    ▲ Upvote Grievance
+                  {% endif %}
+                </button>
+              </form>
+            {% else %}
+              <a href="/login/" class="btn-secondary py-2 px-3 text-xs">Sign in to upvote</a>
+            {% endif %}
+          </div>
+
+          {% if obj.mongo_file_id %}
+            <span class="text-[10px] text-zinc-500 font-mono" title="Stored in Mongo GridFS">GridFS ID: {{ obj.mongo_file_id|slice:":8" }}...</span>
+          {% endif %}
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Bottom Section: Comments & Severity Correction -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- Community Comments Column -->
+      <div class="lg:col-span-7 glass-card p-6 space-y-6">
+        <h3 class="text-lg font-bold font-display text-white border-b border-zinc-800/80 pb-3 flex items-center justify-between">
+          <span>Community Discussions</span>
+          <span class="text-xs text-zinc-500 font-normal">{{ obj.comments.count }} comments</span>
+        </h3>
+
+        <div class="space-y-4">
+          {% for c in obj.comments.all %}
+            <div class="p-4 rounded-xl bg-zinc-950/60 border border-zinc-800/80 space-y-1.5">
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-semibold text-blue-400">{{ c.user.username }}</span>
+                <span class="text-zinc-500">{{ c.created_at|date:"M d, Y · H:i" }}</span>
+              </div>
+              <p class="text-xs text-zinc-300 leading-relaxed">{{ c.text }}</p>
+            </div>
+          {% empty %}
+            <div class="p-6 text-center text-xs text-zinc-500 font-light">
+              No comments yet. Be the first to leave a comment on this report.
+            </div>
+          {% endfor %}
+        </div>
+
+        {% if request.user.is_authenticated %}
+          <form method="post" action="/complaint/{{ obj.pk }}/comment/" class="pt-4 border-t border-zinc-800/80 space-y-3">
+            {% csrf_token %}
+            <textarea name="text" rows="3" placeholder="Add a comment or update..." required class="w-full rounded-xl bg-zinc-950 border border-zinc-800 text-xs sm:text-sm text-zinc-200 p-3 placeholder-zinc-500 focus:border-blue-500 focus:outline-none transition-colors"></textarea>
+            <button type="submit" class="btn-primary text-xs py-2 px-4">Post Comment</button>
+          </form>
+        {% else %}
+          <div class="pt-4 border-t border-zinc-800/80 text-center text-xs text-zinc-400">
+            <a href="/login/" class="text-blue-400 hover:underline">Sign in</a> to leave a comment.
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Human-in-the-loop Correction Column -->
+      <div class="lg:col-span-5 glass-card p-6 space-y-4">
+        <h3 class="text-lg font-bold font-display text-white border-b border-zinc-800/80 pb-3">
+          Refine Model Accuracy
+        </h3>
+        <p class="text-xs text-zinc-400 leading-relaxed font-light">
+          Is the AI-predicted severity incorrect? Submit your ground-truth correction below to help fine-tune future model checkpoints.
+        </p>
+
+        {% if request.user.is_authenticated %}
+          <form method="post" action="/complaint/{{ obj.pk }}/correct/" class="space-y-4 pt-2">
+            {% csrf_token %}
+            <div class="space-y-1.5">
+              <label class="block text-xs font-semibold text-zinc-300">True Severity Grade</label>
+              <select name="true_severity" class="w-full rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-zinc-200 p-3 focus:border-blue-500 focus:outline-none">
+                <option value="minor">Minor Damage</option>
+                <option value="moderate">Moderate Damage</option>
+                <option value="severe">Severe Hazard</option>
+              </select>
+            </div>
+            <button type="submit" class="btn-secondary w-full text-xs py-2.5 justify-center">Submit Correction</button>
+          </form>
+        {% else %}
+          <div class="text-xs text-zinc-500">
+            <a href="/login/" class="text-blue-400 hover:underline">Sign in</a> to submit ground-truth corrections.
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-auto border-t border-zinc-800/80 bg-zinc-950 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-zinc-500">
+      © 2026 Awaaz Civic SaaS Platform. Empowering smart municipal governance.
+    </div>
+  </footer>
+
 </body>
 </html>

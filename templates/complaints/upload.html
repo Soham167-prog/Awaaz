@@ -1,46 +1,144 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Awaaz | Upload</title>
-	<link rel="stylesheet" href="/static/css/dark.css" />
-	<script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Awaaz — Report Road Pothole</title>
+  
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS & Custom Styles -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  <link rel="stylesheet" href="/static/css/dark.css" />
 </head>
-<body class="bg-[#000000] text-[#f5f5f7]">
-	<div class="container max-w-3xl mx-auto px-4">
-		<header class="flex items-center justify-between py-6">
-			<h1 class="text-2xl font-semibold">🕳️ Awaaz - Pothole Report</h1>
-			<div class="space-x-3 text-sm">
-				<a class="text-blue-400 hover:text-blue-300" href="/">Feed</a>
-				{% if request.user.is_authenticated %}
-					<span class="text-zinc-400">|</span>
-					<span class="text-zinc-400">{{ request.user.username }}</span>
-					<span class="text-zinc-400">|</span>
-					<a class="text-blue-400 hover:text-blue-300" href="/logout/">Logout</a>
-				{% else %}
-					<span class="text-zinc-400">|</span>
-					<a class="text-blue-400 hover:text-blue-300" href="/login/">Login</a>
-					<span class="text-zinc-400">|</span>
-					<a class="text-blue-400 hover:text-blue-300" href="/signup/">Sign up</a>
-				{% endif %}
-			</div>
-		</header>
-		<div class="card p-6">
-			<form method="post" enctype="multipart/form-data" class="space-y-4">
-				{% csrf_token %}
-				<div class="flex items-center gap-3">
-					<label class="text-zinc-300">Public</label>
-					{{ form.public }}
-				</div>
-				<div>
-					<label class="block mb-2 text-zinc-300">Road image</label>
-					{{ form.image }}
-				</div>
-				<button type="submit" class="inline-flex items-center rounded-md bg-blue-600 hover:bg-blue-500 px-4 py-2">Analyze and Generate</button>
-			</form>
-		</div>
-		<div class="footer text-center text-zinc-400 py-6">SQLite storage by default. MongoDB optional via MONGO_URI.</div>
-	</div>
+<body class="bg-[#09090b] text-zinc-100 min-h-screen flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+
+  <!-- Glass Navigation Bar -->
+  <nav class="glass-nav">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
+          A
+        </div>
+        <div class="flex flex-col">
+          <span class="text-xl font-bold tracking-tight font-display text-white group-hover:text-blue-400 transition-colors">Awaaz</span>
+          <span class="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">New Grievance</span>
+        </div>
+      </a>
+
+      <div class="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-300">
+        <a href="/" class="hover:text-white transition-colors">Home</a>
+        <a href="/feed/" class="hover:text-blue-400 transition-colors">Public Feed</a>
+      </div>
+
+      <div class="flex items-center gap-3">
+        {% if request.user.is_authenticated %}
+          <span class="text-xs text-zinc-400">Signed in as <strong class="text-white">{{ request.user.username }}</strong></span>
+          <a href="/logout/" class="text-xs text-zinc-400 hover:text-white px-2 py-1 transition-colors">Logout</a>
+        {% else %}
+          <a href="/login/" class="btn-secondary text-xs sm:text-sm">Sign In</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <!-- Upload Container -->
+  <main class="max-w-3xl mx-auto px-4 py-12 flex-1 w-full space-y-8">
+    
+    <div class="text-center space-y-3">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-wide">
+        AI Vision Powered
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-extrabold font-display text-white">Report Road Damage</h1>
+      <p class="text-sm text-zinc-400 max-w-lg mx-auto font-light leading-relaxed">
+        Upload a photo of the pothole or damaged street surface. Our computer vision model will evaluate the severity and generate a municipal grievance report.
+      </p>
+    </div>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <div class="glass-card p-8 border border-zinc-800/80">
+      <form method="post" enctype="multipart/form-data" id="uploadForm" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Image Upload Drag Zone -->
+        <div class="space-y-2">
+          <label class="block text-xs font-semibold text-zinc-300 uppercase tracking-wider">Road Image Evidence</label>
+          
+          <div class="relative border-2 border-dashed border-zinc-800 hover:border-blue-500/50 bg-zinc-950/60 rounded-2xl p-8 text-center transition-colors cursor-pointer group" id="dropZone">
+            <input type="file" name="image" id="id_image" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" required onchange="handleFileSelect(this)" />
+            
+            <div class="space-y-3 pointer-events-none" id="uploadPlaceholder">
+              <div class="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              </div>
+              <div>
+                <span class="text-sm font-semibold text-white">Click to upload</span> or drag and drop image
+                <p class="text-xs text-zinc-500 mt-1">Supports JPG, PNG, WEBP files up to 10MB</p>
+              </div>
+            </div>
+
+            <!-- Image Preview Box -->
+            <div id="imagePreview" class="hidden relative rounded-xl overflow-hidden aspect-video bg-zinc-900 border border-zinc-800">
+              <img id="previewImg" src="#" alt="Preview" class="w-full h-full object-cover" />
+              <div class="absolute top-2 right-2 bg-black/80 backdrop-blur-md px-3 py-1 rounded-lg text-xs text-emerald-400 font-medium border border-emerald-500/30">
+                Image Loaded
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Privacy & Public Toggle -->
+        <div class="flex items-center gap-3 p-4 rounded-xl bg-zinc-950/80 border border-zinc-800/80">
+          <input type="checkbox" name="public" id="id_public" checked class="w-4 h-4 text-blue-600 rounded bg-zinc-900 border-zinc-700 focus:ring-blue-500 focus:ring-offset-zinc-950" />
+          <label for="id_public" class="text-sm text-zinc-300 font-medium cursor-pointer select-none">
+            Publish report to Public Grievance Feed for community upvotes
+          </label>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" id="submitBtn" class="btn-primary w-full py-4 text-base justify-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          <span>Analyze Image & Generate Report</span>
+        </button>
+
+      </form>
+    </div>
+
+  </main>
+
+  <!-- Script for Instant Image Preview & Form Spinner -->
+  <script>
+    function handleFileSelect(input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('previewImg').src = e.target.result;
+          document.getElementById('uploadPlaceholder').classList.add('hidden');
+          document.getElementById('imagePreview').classList.remove('hidden');
+        }
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    document.getElementById('uploadForm').addEventListener('submit', function() {
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.classList.add('opacity-80', 'cursor-not-allowed');
+      btn.innerHTML = `<svg class="w-5 h-5 animate-spin text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <span>Processing Vision AI Model...</span>`;
+    });
+  </script>
+
 </body>
 </html>

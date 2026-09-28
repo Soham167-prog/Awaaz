@@ -30,6 +30,15 @@ def _save_to_mongo(path: str) -> str:
 	return str(file_id)
 
 
+def landing_view(request):
+	total_complaints = Complaint.objects.count()
+	recent_complaints = Complaint.objects.filter(public=True).order_by('-created_at')[:3]
+	return render(request, 'complaints/landing.html', {
+		'total_complaints': total_complaints,
+		'recent_complaints': recent_complaints,
+	})
+
+
 def feed_view(request):
 	qs = Complaint.objects.filter(public=True)
 	severity = request.GET.get('severity')

@@ -1,29 +1,78 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Sign up</title>
-	<link rel="stylesheet" href="/static/css/dark.css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Awaaz — Citizen Registration</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS & Custom Styles -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  <link rel="stylesheet" href="/static/css/dark.css" />
 </head>
-<body>
-	<div class="container">
-		<header>
-			<h1>Sign up</h1>
-		</header>
-		<div class="card">
-			<form method="post">
-				{% csrf_token %}
-				<label>Username</label>
-				<input type="text" name="username" required />
-				<label>Password</label>
-				<input type="password" name="password1" required />
-				<label>Confirm Password</label>
-				<input type="password" name="password2" required />
-				<button type="submit">Create account</button>
-			</form>
-			<p><small>Already have an account? <a href="/login/">Login</a></small></p>
-		</div>
-	</div>
+<body class="bg-[#09090b] text-zinc-100 min-h-screen flex flex-col justify-center items-center p-4 font-sans selection:bg-blue-600 selection:text-white">
+
+  <div class="w-full max-w-md space-y-8">
+    
+    <!-- Logo & Header -->
+    <div class="text-center space-y-3">
+      <a href="/" class="inline-flex items-center gap-3 group">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
+          A
+        </div>
+      </a>
+      <h1 class="text-2xl font-bold font-display text-white">Create your Citizen Account</h1>
+      <p class="text-xs text-zinc-400">Join Awaaz to submit reports, vote on road repairs, and track progress.</p>
+    </div>
+
+    <!-- Signup Glass Card -->
+    <div class="glass-card p-8 border border-zinc-800/80 space-y-6">
+      <form method="post" class="space-y-4">
+        {% csrf_token %}
+
+        {% if form.errors %}
+          <div class="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs space-y-1">
+            {% for field in form %}
+              {% for error in field.errors %}
+                <p>• {{ field.label }}: {{ error }}</p>
+              {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+              <p>• {{ error }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% for field in form %}
+          <div class="space-y-1.5">
+            <label class="block text-xs font-semibold text-zinc-300 uppercase tracking-wider">{{ field.label }}</label>
+            <input type="{{ field.field.widget.input_type|default:'text' }}" name="{{ field.name }}" required class="w-full rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-200 p-3 focus:border-blue-500 focus:outline-none transition-colors" placeholder="{{ field.label }}" />
+            {% if field.help_text %}
+              <p class="text-[10px] text-zinc-500">{{ field.help_text|striptags }}</p>
+            {% endif %}
+          </div>
+        {% endfor %}
+
+        <button type="submit" class="btn-primary w-full py-3 text-sm justify-center font-semibold mt-2">
+          Create Account & Sign In
+        </button>
+      </form>
+
+      <div class="pt-4 border-t border-zinc-800/80 text-center text-xs text-zinc-400">
+        Already have an account? <a href="/login/" class="text-blue-400 font-semibold hover:underline">Sign In</a>
+      </div>
+    </div>
+
+    <div class="text-center text-xs text-zinc-600">
+      <a href="/" class="hover:text-zinc-400 transition-colors">← Back to Homepage</a>
+    </div>
+
+  </div>
+
 </body>
 </html>

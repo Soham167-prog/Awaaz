@@ -4,7 +4,8 @@ from . import views
 from . import views_auth
 
 urlpatterns = [
-	path('', views.feed_view, name='feed'),
+	path('', views.landing_view, name='landing'),
+	path('feed/', views.feed_view, name='feed'),
 	path('new/', views.upload_view, name='upload'),
 	path('complaint/<int:pk>/', views.detail_view, name='complaint_detail'),
 	path('complaint/<int:pk>/upvote/', views.upvote_view, name='complaint_upvote'),
